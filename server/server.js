@@ -13,7 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 
-app.use(authRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
