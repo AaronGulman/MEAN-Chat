@@ -19,5 +19,15 @@ export class LoginComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   onLogin() {
+    this.authService.login(this.username, this.password).subscribe({
+      next: (data:any) => {
+        console.log('Login successful', data);
+        //this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Login failed', error);
+        alert('Login failed. Please check your credentials and try again.');
+      },
+    });
   }
 }

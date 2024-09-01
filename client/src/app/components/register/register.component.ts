@@ -18,6 +18,15 @@ export class RegisterComponent {
   constructor(private authService: AuthService) {}
 
   onRegister() {
-
+    this.authService.register(this.username, this.email, this.password).subscribe({
+      next: (data:any) => {
+        console.log('Register successful', data);
+        //this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Register failed', error);
+        alert('Register failed. Please check your inputs and try again.');
+      },
+    });
   }
 }
