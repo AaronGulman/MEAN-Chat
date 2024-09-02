@@ -24,8 +24,8 @@ export class LoginComponent {
         console.log(data);
         if (data.valid) {
           console.log('Login successful', data);
-          alert("Login Successful");
-          //this.router.navigate(['/dashboard']);
+          //alert("Login Successful");
+          this.router.navigate(['/dashboard']);
         } else {
           alert('Login failed. Please check your credentials and try again.');
         }
