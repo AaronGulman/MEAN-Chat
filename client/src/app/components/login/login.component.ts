@@ -21,12 +21,18 @@ export class LoginComponent {
   onLogin() {
     this.authService.login(this.username, this.password).subscribe({
       next: (data:any) => {
-        console.log('Login successful', data);
-        //this.router.navigate(['/dashboard']);
+        console.log(data);
+        if (data.valid) {
+          console.log('Login successful', data);
+          alert("Login Successful");
+          //this.router.navigate(['/dashboard']);
+        } else {
+          alert('Login failed. Please check your credentials and try again.');
+        }
       },
       error: (error) => {
         console.error('Login failed', error);
-        alert('Login failed. Please check your credentials and try again.');
+        alert('Error occured during login');
       },
     });
   }
