@@ -9,8 +9,7 @@ export class UserService {
   private localStorageKey = 'users';
 
   constructor() {
-    // Initialize hard-coded users if none exist in local storage
-    if (!this.getUsers().length) {
+    if(!this.getUserByUsername("super")){
       this.initializeDefaultUsers();
     }
   }
@@ -25,8 +24,8 @@ export class UserService {
       ['superadmin'],
       []
     );
-    const users = [superUser];
-    this.saveUsers(users);
+    const users = this.getUsers();
+    this.saveUsers([...users, superUser]);
   }
 
   // Retrieve all users from local storage
@@ -95,7 +94,20 @@ export class UserService {
   addGroupToUser(userId: string, group: Group): User | null {
     const user = this.getUserById(userId);
     if (user) {
-      user.groups.push(group);
+      if (!user.groups.some(g => g.id === group.id)) {
+        user.groups.push(group);
+        this.updateUser(userId, { groups: user.groups });
+      }
+      return user;
+    }
+    return null;
+  }
+
+  // Remove a group from a user
+  removeGroupFromUser(userId: string, groupId: string): User | null {
+    const user = this.getUserById(userId);
+    if (user) {
+      user.groups = user.groups.filter(group => group.id !== groupId);
       this.updateUser(userId, { groups: user.groups });
       return user;
     }

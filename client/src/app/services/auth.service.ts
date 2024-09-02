@@ -48,7 +48,7 @@ export class AuthService {
         if (response.valid) {
           // Use UserService to create a user if registration is successful
           const newUser = this.userService.createUser(username, email, password);
-          console.log("New User Created: `${newUser}`");
+          console.log("New User Created: ",newUser);
           return { valid: true, ...newUser };
         } else {
           return { valid: false };
@@ -58,5 +58,15 @@ export class AuthService {
         return throwError(() => new Error('Registration failed'));
       })
     );
+  }
+
+
+  getLoggedInUser(): string | null {
+    const username = sessionStorage.getItem('loggedInUser');
+    return username ? JSON.parse(username) : null;
+  }
+
+  clearLoggedInUser(): void {
+    sessionStorage.removeItem('loggedInUser');
   }
 }
