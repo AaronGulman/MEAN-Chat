@@ -26,7 +26,7 @@ export class GroupComponent implements OnInit {
   selectedNav: string = 'channels';
   newChannelName: string = '';
   newChannelDescription: string = '';
-
+  currentGroupRole: string = '';
   constructor(
     private groupService: GroupService,
     private channelService: ChannelService,
@@ -41,6 +41,8 @@ export class GroupComponent implements OnInit {
       const groupId = params['id'];
       this.loadGroup(groupId);
     });
+
+    
   }
 
   loadGroup(groupId: string) {
@@ -49,6 +51,7 @@ export class GroupComponent implements OnInit {
       const user = this.userService.getUserByUsername(loggedInUser);
       this.role = user?.roles.includes('superadmin') ? 'superadmin' : user?.roles.includes('admin') ? 'admin' : 'user';
       this.group = this.groupService.getGroupById(groupId) || new Group('', '');
+      this.currentGroupRole = this.getGroupRole(user?.id);
     }
     console.log(this.group);
   }
@@ -108,6 +111,16 @@ export class GroupComponent implements OnInit {
     }
   }
 
+
+  getGroupRole(userId: string | undefined): string {
+    if (this.group.admins.some(admin => admin.id === userId)) {
+      return 'Admin';
+    } else if (this.group.members.some(member => member.id === userId)) {
+      return 'User';
+    } else {
+      return 'Not a member';
+    }
+  }
   selectChannel(channel: Channel) {
     console.log(channel);
     this.router.navigate(['/channel'+ '/' + this.group.id+'/'+channel.id]);

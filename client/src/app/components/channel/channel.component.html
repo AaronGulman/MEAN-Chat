@@ -16,7 +16,7 @@
                     <p class="text-center">Current Role: {{ role }}</p>
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'channel'}" (click)="selectNavItem('channel')">Channel Chat</a>
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'channel'}" (click)="selectNavItem('channel')">Chat</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')">Settings</a>
@@ -36,7 +36,7 @@
 
                 <!-- Channel Main View -->
                 <div *ngIf="selectedNav === 'channel'" class="d-flex justify-content-center align-items-center vh-75">
-                    <h4>Implemented later</h4>
+                    <h1>Implemented later in stage 2</h1>
                 </div>
 
                 <!-- Settings Tab -->
