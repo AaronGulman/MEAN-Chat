@@ -83,14 +83,12 @@ export class GroupComponent implements OnInit {
     const loggedInUser = this.authService.getLoggedInUser();
     if (typeof loggedInUser === 'string') {
       const user = this.userService.getUserByUsername(loggedInUser);
-      if (user && (this.role === 'admin' || this.role === 'superadmin')) {
-        const newChannel = this.channelService.createChannel(this.newChannelName,this.group.id);
-        this.groupService.addChannelToGroup(this.group.id, newChannel);
-        this.group.channels.push(newChannel);
-        this.newChannelName = '';
-        this.newChannelDescription = '';
-        this.closeCreateChannelModal();
-      }
+      const newChannel = this.channelService.createChannel(this.newChannelName,this.group.id);
+      this.groupService.addChannelToGroup(this.group.id, newChannel);
+      this.group.channels.push(newChannel);
+      this.newChannelName = '';
+      this.newChannelDescription = '';
+      this.closeCreateChannelModal();
     }
   }
 
@@ -138,6 +136,18 @@ export class GroupComponent implements OnInit {
     }
   }
 
+
+  // Check if the current user is an admin of the group
+  isCurrentUserAdmin(): boolean {
+    const loggedInUser = this.authService.getLoggedInUser();
+    if (typeof loggedInUser === 'string') {
+      const currentUser = this.userService.getUserByUsername(loggedInUser);
+      return this.group.admins.some(admin => admin.id === currentUser?.id);
+    }
+    return false;
+  }
+
+
   canPromote(user: User): boolean {
     return user.roles.includes('user') || user.roles.includes('admin');
   }
@@ -147,15 +157,15 @@ export class GroupComponent implements OnInit {
   }
 
   promoteUser(user: User): void {
-    if (user.roles.includes('user') || user.roles.includes('admin')) {
-      this.userService.promoteUser(user.id);
-    }
+    //this.userService.promoteUser(user.id);
+    this.groupService.promoteToAdmin(this.group.id,user.id);
+    this.group = this.groupService.getGroupById(this.group.id) || new Group('', '');
   }
 
   demoteUser(user: User): void {
-    if (user.roles.includes('admin')) {
-      this.userService.demoteUser(user.id);
-    }
+    //this.userService.demoteUser(user.id);
+    this.groupService.demoteAdmin(this.group.id,user.id);
+    this.group = this.groupService.getGroupById(this.group.id) || new Group('', '');
   }
 
 
@@ -170,16 +180,20 @@ export class GroupComponent implements OnInit {
   
   approveUser(user: User){
     this.groupService.approveInterestedUser(this.group.id,user.id);
-    this.loadGroup(this.group.id);
+    this.group = this.groupService.getGroupById(this.group.id) || new Group('', '');
     }
 
   denyUser(user: User){
     this.groupService.denyInterestedUser(this.group.id,user.id);
-    this.loadGroup(this.group.id);
+    this.group = this.groupService.getGroupById(this.group.id) || new Group('', '');
   }
 
   removeUserFromGroup(user: User){
     this.groupService.removeUserFromGroup(this.group.id,user.id);
-    this.loadGroup(this.group.id);
+    this.group = this.groupService.getGroupById(this.group.id) || new Group('', '');
+  }
+
+  leaveGroup(){
+    
   }
 }

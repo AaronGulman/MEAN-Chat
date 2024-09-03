@@ -126,26 +126,31 @@ export class GroupService {
   }
 
   // Promote a user to admin
-  promoteToAdmin(groupId: string, userId: string): Group | null {
+  promoteToAdmin(groupId: string, userId: string) {
     const group = this.getGroupById(groupId);
     const user = this.userService.getUserById(userId);
-
+  
     if (group && user && !group.admins.some(admin => admin.id === userId)) {
       group.admins.push(user);
-      return this.updateGroup(groupId, { admins: group.admins });
+      group.members = group.members.filter(member => member.id !== userId);
+      this.updateGroup(groupId, { admins: group.admins, members: group.members });
     }
-    return null;
   }
+  
 
   // Demote an admin from a group
-  demoteAdmin(groupId: string, userId: string): Group | null {
+  demoteAdmin(groupId: string, userId: string) {
     const group = this.getGroupById(groupId);
     if (group) {
       group.admins = group.admins.filter(admin => admin.id !== userId);
-      return this.updateGroup(groupId, { admins: group.admins });
+      const user = this.userService.getUserById(userId);
+      if (user) {
+        group.members.push(user);
+      }
+      this.updateGroup(groupId, { admins: group.admins, members: group.members });
     }
-    return null;
   }
+  
 
   // Remove group from all users
   private removeGroupFromUsers(groupId: string): void {
