@@ -19,6 +19,7 @@ import { User } from '../../models/user.model';
 })
 export class DashboardComponent implements OnInit {
   username: string = '';
+  user: User = new User('','','','');
   groups: Group[] = [];
   interestedGroups: Group[] = [];
   availableGroups: Group[] = [];
@@ -47,6 +48,7 @@ export class DashboardComponent implements OnInit {
     // Initialize user data
     if (typeof loggedInUser === 'string') {
       const user = this.userService.getUserByUsername(loggedInUser);
+      this.user = user || new User('','','','');
       if (user) {
         this.username = user.username;
         this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
@@ -194,5 +196,24 @@ export class DashboardComponent implements OnInit {
   logout() {
     this.authService.clearLoggedInUser(); // Clear session storage
     this.router.navigate(['/login']); // Redirect to login page
+  }
+
+
+  updateUser() {
+    const updatedData = {
+      email: this.user.email,
+      password: this.user.password
+    };
+    this.userService.updateUser(this.user.id,updatedData);
+    alert("Details Updated");
+    this.selectedNav = "groups";
+  }
+
+  deleteUser() {
+    const confirmDelete = confirm('Are you sure you want to delete your account?');
+    if (confirmDelete) {
+      this.userService.deleteUser(this.user.id);
+      this.logout();
+    }
   }
 }
