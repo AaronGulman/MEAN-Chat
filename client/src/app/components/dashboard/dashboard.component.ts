@@ -40,6 +40,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     const loggedInUser = this.authService.getLoggedInUser();
+    console.log("1");
     if (!loggedInUser) {
       this.router.navigate(['/login']);
       return;
@@ -175,7 +176,6 @@ export class DashboardComponent implements OnInit {
       }
     }
   }
-
   canPromote(user: User): boolean {
     return user.roles.includes('user') || user.roles.includes('admin');
   }
