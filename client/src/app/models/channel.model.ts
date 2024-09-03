@@ -1,17 +1,14 @@
-// channel.model.ts
-import { User } from './user.model';
-
 export class Channel {
   id: string;
   name: string;
   groupId: string;
-  members: User[];
+  members: string[];
 
   constructor(
     id: string,
     name: string,
     groupId: string,
-    members: User[] = [],
+    members: string[] = [],
   ) {
     this.id = id;
     this.name = name;

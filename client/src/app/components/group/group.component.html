@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="container-fluid">
         <div class="row vh-100">
@@ -36,94 +38,151 @@
                 <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Group: {{group.name}}</h1>
                 </div>
+
+                <!-- Channels Tab -->
                 <div *ngIf="selectedNav === 'channels'">
-                <!-- Channel Cards -->
-                <div class="row">
-                    <div class="col-12">
-                        <h4>Channels</h4>
-                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            <!-- Channel Cards -->
-                            <div class="col" *ngFor="let channel of group.channels">
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ channel.name }}</h5>
-                                        <p class="card-text"><strong>Members:</strong> {{ channel.members.length }}</p>
-                                        <button class="btn btn-primary" (click)="joinChannel(channel)">Join</button>
-                                    </div>
+                    <h4>Channels</h4>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        <!-- Channel Cards -->
+                        <div class="col" *ngFor="let channel of group.channels">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ channel.name }}</h5>
+                                    <p class="card-text"><strong>Members:</strong> {{ channel.members.length }}</p>
+                                    <button class="btn btn-primary" (click)="joinChannel(channel)">Join</button>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Create New Channel Card (for admin/superadmin) -->
-                            <div class="col" *ngIf="role === 'admin' || role === 'superadmin'">
-                                <div class="card mb-3" (click)="openCreateChannelModal()">
-                                    <div class="card-body text-center">
-                                        <h5 class="card-title">Create New Channel</h5>
-                                        <p class="card-text">Click here to create a new channel.</p>
-                                    </div>
+                        <!-- Create New Channel Card (for admin/superadmin) -->
+                        <div class="col" *ngIf="role === 'admin' || role === 'superadmin'">
+                            <div class="card mb-3 cursor-pointer" (click)="openCreateChannelModal()">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Create New Channel</h5>
+                                    <p class="card-text">Click here to create a new channel.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
                 <!-- Settings Form -->
-            <div *ngIf="selectedNav === 'settings'">
-                <h4>Group Settings</h4>
-                <form (ngSubmit)="updateGroup()">
-                    <div class="mb-3">
-                        <label for="groupName" class="form-label">Group Name</label>
-                        <input type="text" id="groupName" class="form-control" [(ngModel)]="group.name" name="groupName" disabled>
-                    </div>
-                    <div class="mb-3">
-                        <label for="groupDescription" class="form-label">Group Description</label>
-                        <textarea id="groupDescription" class="form-control" [(ngModel)]="group.description" name="groupDescription" required></textarea>
-                    </div>
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-danger" (click)="confirmDeleteGroup()">Delete Group</button>
-                        <button type="submit" class="btn btn-primary">Update Details</button>
-                    </div>
-                </form>
-            </div>
+                <div *ngIf="selectedNav === 'settings'">
+                    <h4>Group Settings</h4>
+                    <form (ngSubmit)="updateGroup()">
+                        <div class="mb-3">
+                            <label for="groupName" class="form-label">Group Name</label>
+                            <input type="text" id="groupName" class="form-control" [(ngModel)]="group.name" name="groupName" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="groupDescription" class="form-label">Group Description</label>
+                            <textarea id="groupDescription" class="form-control" [(ngModel)]="group.description" name="groupDescription" required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="button" class="btn btn-danger" (click)="confirmDeleteGroup()">Delete Group</button>
+                            <button type="submit" class="btn btn-primary">Update Details</button>
+                        </div>
+                    </form>
+                </div>
 
-
-                <!-- Users List -->
+                <!-- Users Tab -->
                 <div *ngIf="selectedNav === 'users'">
                     <h4>Group Users</h4>
                     <div class="row">
                         <div class="col-12">
-                            <ul class="list-group">
-                                <li *ngFor="let user of group.members" class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
-                                        <p class="mb-1">Roles: <span *ngFor="let role of user.roles; let isLast = last">
-                                            {{ role }}<span *ngIf="!isLast">, </span>
-                                        </span></p>
-                                    </div>
-                                    <div>
-                                        <ng-container *ngIf="canPromote(user)">
+                            <!-- Admins Section -->
+                            <h5>Admins</h5>
+                            <div *ngIf="group.admins && group.admins.length > 0; else noAdmins">
+                                <ul class="list-group mb-4">
+                                    <li *ngFor="let user of group.admins" class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
+                                            <p class="mb-1">Roles: 
+                                                <span *ngFor="let role of user.roles; let isLast = last">
+                                                    {{ role }}<span *ngIf="!isLast">, </span>
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <!-- No actions for admins -->
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <ng-template #noAdmins>
+                                <p>None</p>
+                            </ng-template>
+
+                            <!-- Members Section -->
+                            <h5>Members</h5>
+                            <div *ngIf="group.members && group.members.length > 0; else noMembers">
+                                <ul class="list-group mb-4">
+                                    <li *ngFor="let user of group.members" class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
+                                            <p class="mb-1">Roles: 
+                                                <span *ngFor="let role of user.roles; let isLast = last">
+                                                    {{ role }}<span *ngIf="!isLast">, </span>
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <ng-container *ngIf="canPromote(user)">
+                                                <button 
+                                                    class="btn btn-success btn-sm me-2"
+                                                    (click)="promoteUser(user)">
+                                                    Promote
+                                                </button>
+                                            </ng-container>
+                                            <button 
+                                                class="btn btn-danger btn-sm me-2"
+                                                (click)="banUser(user)">
+                                                Ban
+                                            </button>
+                                            <button 
+                                                class="btn btn-warning btn-sm"
+                                                (click)="removeUserFromGroup(user)">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <ng-template #noMembers>
+                                <p>None</p>
+                            </ng-template>
+
+                            <!-- Interested Section -->
+                            <h5>Interested</h5>
+                            <div *ngIf="group.interested && group.interested.length > 0; else noInterested">
+                                <ul class="list-group">
+                                    <li *ngFor="let user of group.interested" class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
+                                            <p class="mb-1">Roles: 
+                                                <span *ngFor="let role of user.roles; let isLast = last">
+                                                    {{ role }}<span *ngIf="!isLast">, </span>
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div>
                                             <button 
                                                 class="btn btn-success btn-sm me-2"
-                                                (click)="promoteUser(user)">
-                                                Promote
+                                                (click)="approveUser(user)">
+                                                Approve
                                             </button>
-                                        </ng-container>
-                                        <ng-container *ngIf="canDemote(user)">
                                             <button 
-                                                class="btn btn-danger btn-sm me-2"
-                                                (click)="demoteUser(user)">
-                                                Demote
+                                                class="btn btn-danger btn-sm"
+                                                (click)="denyUser(user)">
+                                                Deny
                                             </button>
-                                        </ng-container>
-                                        <ng-container *ngIf="user.roles.includes('user')">
-                                            <button 
-                                                class="btn btn-danger btn-sm me-2"
-                                                (click)="deleteUser(user)">
-                                                Delete
-                                            </button>
-                                        </ng-container>
-                                    </div>
-                                </li>
-                            </ul>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <ng-template #noInterested>
+                                <p>None</p>
+                            </ng-template>
                         </div>
                     </div>
                 </div>
@@ -158,4 +217,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

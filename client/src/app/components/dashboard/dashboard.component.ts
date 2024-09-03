@@ -29,7 +29,7 @@ export class DashboardComponent implements OnInit {
   role: string = '';
   selectedNav: string = 'groups';
   registrationStatus: { [groupId: string]: string } = {};
-  allUsers: User[] = []; // Added to store all users
+  allUsers: User[] = [];
 
   constructor(
     private groupService: GroupService,
@@ -45,33 +45,19 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    if (typeof loggedInUser === 'string') {
-      const user = this.userService.getUserByUsername(loggedInUser);
-      this.user = user || new User('', '', '', '');
-      if (typeof loggedInUser === 'string') {
-        const user = this.userService.getUserByUsername(loggedInUser);
-        this.user = user || new User('', '', '', '');
-        if (user) {
-            this.username = user.username;
-            this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
-            
-            this.groups = [];
-            if (user.groups) {
-                user.groups.forEach(group => {
-                    const fetchedGroup = this.groupService.getGroupById(group.id);
-                    if (fetchedGroup) {
-                        this.groups.push(fetchedGroup);
-                    }
-                });
-            }
-            this.userService.updateUser(user.id, {groups: this.groups});
-            this.interestedGroups = user.interested || [];
-            this.canCreateGroup = this.role === 'superadmin' || this.role === 'admin';
-
-            this.loadAllUsers(); // Load all users on initialization
-        }
-    }
-
+    const user = this.userService.getUserByUsername(loggedInUser);
+    if (user) {
+      this.user = user;
+      this.username = user.username;
+      this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
+      this.groups = user.groups ? user.groups.map(group => this.groupService.getGroupById(group)).filter(group => group !== null) as Group[] : [];
+      this.interestedGroups = user.interested
+      ? user.interested.map(groupId => this.groupService.getGroupById(groupId)).filter(group => group !== null) as Group[]
+      : [];
+      this.canCreateGroup = this.role === 'superadmin' || this.role === 'admin';
+      this.loadAllUsers();
+    } else {
+      this.router.navigate(['/login']);
     }
 
     this.loadAvailableGroups();
@@ -79,15 +65,12 @@ export class DashboardComponent implements OnInit {
 
   loadAvailableGroups() {
     const allGroups = this.groupService.getGroups();
-    const user = this.userService.getUserByUsername(this.username);
-    const userInterestedGroups = user?.interested || [];
+    const userInterestedGroups = this.interestedGroups;
 
-    this.interestedGroups = userInterestedGroups;
-    this.registrationStatus = {};
-
-    userInterestedGroups.forEach(group => {
-      this.registrationStatus[group.id] = 'Pending';
-    });
+    this.registrationStatus = userInterestedGroups.reduce((status, group) => {
+      status[group.id] = 'Pending';
+      return status;
+    }, {} as { [groupId: string]: string });
 
     this.availableGroups = allGroups.filter(group => {
       const isUserMember = this.groups.some(userGroup => userGroup.id === group.id);
@@ -121,72 +104,49 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    const loggedInUser = this.authService.getLoggedInUser();
-    if (typeof loggedInUser === 'string') {
-      const user = this.userService.getUserByUsername(loggedInUser);
-      if (user) {
-        const newGroup = this.groupService.createGroup(this.newGroupName, this.newGroupDescription, [user]);
-        if (newGroup) {
-          this.userService.addGroupToUser(user.id, newGroup);
-          this.groups.push(newGroup);
-          this.newGroupName = '';
-          this.newGroupDescription = '';
-          this.closeCreateGroupModal();
-        }
-      }
+    const newGroup = this.groupService.createGroup(this.newGroupName, this.newGroupDescription, [this.user]);
+    if (newGroup) {
+      this.userService.addGroupToUser(this.user.id, newGroup.id);
+      this.groups.push(newGroup);
+      this.newGroupName = '';
+      this.newGroupDescription = '';
+      this.closeCreateGroupModal();
     }
   }
 
   openCreateGroupModal() {
-    const modalElement = document.getElementById('createGroupModal');
-    if (modalElement) {
-      const modal = new bootstrap.Modal(modalElement);
-      modal.show();
-    }
+    this.toggleModal('createGroupModal', 'show');
   }
 
   closeCreateGroupModal() {
-    const modalElement = document.getElementById('createGroupModal');
-    if (modalElement) {
-      const modal = bootstrap.Modal.getInstance(modalElement);
-      if (modal) {
-        modal.hide();
-      }
-    }
+    this.toggleModal('createGroupModal', 'hide');
   }
 
   openRegisterGroupModal() {
-    const modalElement = document.getElementById('registerGroupModal');
-    if (modalElement) {
-      const modal = new bootstrap.Modal(modalElement);
-      modal.show();
-    }
+    this.toggleModal('registerGroupModal', 'show');
   }
 
   closeRegisterGroupModal() {
-    const modalElement = document.getElementById('registerGroupModal');
+    this.toggleModal('registerGroupModal', 'hide');
+  }
+
+  private toggleModal(modalId: string, action: 'show' | 'hide') {
+    const modalElement = document.getElementById(modalId);
     if (modalElement) {
-      const modal = bootstrap.Modal.getInstance(modalElement);
-      if (modal) {
-        modal.hide();
-      }
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+      action === 'show' ? modal.show() : modal.hide();
     }
   }
 
   registerGroup(group: Group) {
-    const user = this.userService.getUserByUsername(this.username);
-    if (user) {
-      const success = this.groupService.registerUserToGroup(group.id, user.id);
-      if (success) {
-        this.registrationStatus[group.id] = 'Pending';
-        this.interestedGroups.push(group);
-        this.userService.addInterestToUser(user.id, group);
-        this.closeRegisterGroupModal();
-      } else {
-        console.error('User is already interested or registration failed');
-      }
+    const success = this.groupService.registerUserToGroup(group.id, this.user.id);
+    if (success) {
+      this.registrationStatus[group.id] = 'Pending';
+      this.interestedGroups.push(group);
+      this.userService.addInterestToUser(this.user.id, group.id);
+      this.closeRegisterGroupModal();
     } else {
-      console.error('User not found');
+      console.error('User is already interested or registration failed');
     }
   }
 
@@ -201,52 +161,42 @@ export class DashboardComponent implements OnInit {
       password: this.user.password
     };
     this.userService.updateUser(this.user.id, updatedData);
-    alert("Details Updated");
-    this.selectedNav = "groups";
+    alert('Details Updated');
+    this.selectedNav = 'groups';
   }
 
   deleteUser(user: User) {
-    const confirmDelete = confirm('Are you sure you want to delete this account?');
-    if (confirmDelete) {
+    if (confirm('Are you sure you want to delete this account?')) {
       this.userService.deleteUser(user.id);
-      if(this.role === "superadmin" && this.selectedNav === "users"){
+      if (this.role === 'superadmin' && this.selectedNav === 'users') {
         this.loadUsers();
-      }else{
+      } else {
         this.logout();
       }
     }
   }
 
-
   canPromote(user: User): boolean {
-    // User can be promoted if they are either a 'user' or 'admin'
     return user.roles.includes('user') || user.roles.includes('admin');
   }
 
-
-  
   canDemote(user: User): boolean {
     return user.roles.includes('admin');
   }
+
   promoteUser(user: User): void {
-    if (user.roles.includes('user') || user.roles.includes('admin')) {
-      // Promote user to admin
+    if (this.canPromote(user)) {
       this.userService.promoteUser(user.id);
-      // Refresh user list
       this.loadUsers();
     }
   }
 
-  // Demote a user from admin to user
   demoteUser(user: User): void {
-    if (user.roles.includes('admin')) {
-      // Demote user to user
+    if (this.canDemote(user)) {
       this.userService.demoteUser(user.id);
-      // Refresh user list
       this.loadUsers();
     }
   }
-
 
   loadUsers(): void {
     this.allUsers = this.userService.getUsers();

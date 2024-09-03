@@ -1,13 +1,11 @@
-import { Group } from "./group.model";
-
 export class User {
   id: string;
   username: string;
   email: string;
   password: string;
   roles: string[];
-  groups: Group[];
-  interested: Group[];
+  groups: string[];
+  interested: string[];
 
   constructor(
     id: string,
@@ -15,8 +13,8 @@ export class User {
     email: string,
     password: string,
     roles: string[] = ['user'],
-    groups: Group[] = [],
-    interested: Group[] = []
+    groups: string[] = [],
+    interested: string[] = []
   ) {
     this.id = id;
     this.username = username;

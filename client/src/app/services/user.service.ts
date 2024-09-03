@@ -14,33 +14,28 @@ export class UserService {
     }
   }
 
-  // Initialize default users
   private initializeDefaultUsers(): void {
     const superUser = new User(
       Date.now().toString(),
       'super',
       'super@example.com',
       '123',
-      ['superadmin'],
-      []
+      ['superadmin']
     );
     const users = this.getUsers();
     this.saveUsers([...users, superUser]);
   }
 
-  // Retrieve all users from local storage
   getUsers(): User[] {
     const users = localStorage.getItem(this.localStorageKey);
     return users ? JSON.parse(users) : [];
   }
 
-  // Save users to local storage
   private saveUsers(users: User[]): void {
     localStorage.setItem(this.localStorageKey, JSON.stringify(users));
   }
 
-  // Create a new user
-  createUser(username: string, email: string, password: string, roles: string[] = ['user'], groups: Group[] = []): User | null {
+  createUser(username: string, email: string, password: string, roles: string[] = ['user'], groups: string[] = []): User | null {
     const existingUser = this.getUserByUsername(username);
     if (existingUser) {
       return null;
@@ -54,20 +49,17 @@ export class UserService {
     return newUser;
   }
 
-  // Update an existing user
-  updateUser(id: string, updatedData: Partial<User>): User | null {
+  updateUser(id: string, updatedData: Partial<User>){
     const users = this.getUsers();
     const index = users.findIndex(user => user.id === id);
     if (index !== -1) {
       const updatedUser = { ...users[index], ...updatedData };
       users[index] = updatedUser;
       this.saveUsers(users);
-      return updatedUser;
     }
     return null;
   }
 
-  // Delete a user by ID
   deleteUser(id: string): boolean {
     const users = this.getUsers();
     const updatedUsers = users.filter(user => user.id !== id);
@@ -78,63 +70,59 @@ export class UserService {
     return false;
   }
 
-  // Find a user by ID
   getUserById(id: string): User | null {
     const users = this.getUsers();
     return users.find(user => user.id === id) || null;
   }
 
-  // Find a user by username
   getUserByUsername(username: string): User | null {
     const users = this.getUsers();
     return users.find(user => user.username === username) || null;
   }
 
-  // Add a group to a user
-  addGroupToUser(userId: string, group: Group): User | null {
+  addGroupToUser(userId: string, groupId: string) {
     const user = this.getUserById(userId);
     if (user) {
-      if (!user.groups.some(g => g.id === group.id)) {
-        user.groups.push(group);
+      if (!user.groups.includes(groupId)) {
+        user.groups.push(groupId);
         this.updateUser(userId, { groups: user.groups });
       }
-      return user;
     }
-    return null;
   }
 
-  // Remove a group from a user
-  removeGroupFromUser(userId: string, groupId: string): User | null {
+  removeGroupFromUser(userId: string, groupId: string){
     const user = this.getUserById(userId);
     if (user) {
-      user.groups = user.groups.filter(group => group.id !== groupId);
+      user.groups = user.groups.filter(id => id !== groupId);
       this.updateUser(userId, { groups: user.groups });
-      return user;
     }
-    return null;
   }
 
-  // Delete all users
-  deleteAllUsers(): void {
+  removeInterestedGroupFromUser(userId: string, groupId: string){
+    const user = this.getUserById(userId);
+    if (user) {
+      user.interested = user.interested.filter(id => id !== groupId);
+      this.updateUser(userId, { interested: user.interested });
+    }
+  }
+
+  deleteAllUsers(){
     localStorage.removeItem(this.localStorageKey);
   }
 
-  // Set logged-in user in session storage
-  setLoggedInUser(username: string): void {
+  setLoggedInUser(username: string){
     sessionStorage.setItem('loggedInUser', JSON.stringify(username));
   }
 
-  // Clear logged-in user from session storage
-  clearLoggedInUser(): void {
+  clearLoggedInUser(){
     sessionStorage.removeItem('loggedInUser');
   }
 
-  // Add a group to a user’s interests
-  addInterestToUser(userId: string, group: Group): User | null {
+  addInterestToUser(userId: string, groupId: string){
     const user = this.getUserById(userId);
     if (user) {
-      if (!user.interested.some(g => g.id === group.id)) {
-        user.interested.push(group);
+      if (!user.interested.includes(groupId)) {
+        user.interested.push(groupId);
         this.updateUser(userId, { interested: user.interested });
       }
       return user;
@@ -142,37 +130,28 @@ export class UserService {
     return null;
   }
 
-  // Promote a user to admin or superadmin
-  promoteUser(userId: string): User | null {
+  promoteUser(userId: string){
     const user = this.getUserById(userId);
     if (user) {
-        if (user.roles.includes('user')) {
-            // Promote user to admin
-            return this.updateUser(userId, { roles: ['admin'] });
-        } else if (user.roles.includes('admin')) {
-            // Promote admin to superadmin
-            return this.updateUser(userId, { roles: ['superadmin'] });
-        }
-    }
-    return null;
-}
-
-
-  // Demote a user from admin to user
-  // Demote a user from admin or superadmin to user
-  demoteUser(userId: string): User | null {
-    const user = this.getUserById(userId);
-    if (user) {
-        if (user.roles.includes('superadmin')) {
-            // Superadmin cannot be demoted
-            return null;
-        }
-        if (user.roles.includes('admin')) {
-            // Demote admin to user
-            return this.updateUser(userId, { roles: ['user'] });
-        }
+      if (user.roles.includes('user')) {
+        return this.updateUser(userId, { roles: ['admin'] });
+      } else if (user.roles.includes('admin')) {
+        return this.updateUser(userId, { roles: ['superadmin'] });
+      }
     }
     return null;
   }
 
+  demoteUser(userId: string){
+    const user = this.getUserById(userId);
+    if (user) {
+      if (user.roles.includes('superadmin')) {
+        return null; // Superadmin cannot be demoted
+      }
+      if (user.roles.includes('admin')) {
+        return this.updateUser(userId, { roles: ['user'] });
+      }
+    }
+    return null;
+  }
 }

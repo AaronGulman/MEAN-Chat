@@ -85,7 +85,7 @@ export class GroupComponent implements OnInit {
       const user = this.userService.getUserByUsername(loggedInUser);
       if (user && (this.role === 'admin' || this.role === 'superadmin')) {
         const newChannel = this.channelService.createChannel(this.newChannelName,this.group.id);
-        this.groupService.addChannelToGroup(this.group.id, newChannel, user);
+        this.groupService.addChannelToGroup(this.group.id, newChannel);
         this.group.channels.push(newChannel);
         this.newChannelName = '';
         this.newChannelDescription = '';
@@ -103,7 +103,7 @@ export class GroupComponent implements OnInit {
     if (typeof loggedInUser === 'string') {
       const user = this.userService.getUserByUsername(loggedInUser);
       if (user) {
-        const updatedGroup = this.groupService.updateGroup(this.group.id, { description: this.group.description }, user);
+        const updatedGroup = this.groupService.updateGroup(this.group.id, { description: this.group.description });
         if (updatedGroup) {
           this.group = updatedGroup;
           alert("Group details updated");
@@ -127,7 +127,7 @@ export class GroupComponent implements OnInit {
     if (typeof loggedInUser === 'string') {
       const user = this.userService.getUserByUsername(loggedInUser);
       if (user) {
-        const success = this.groupService.deleteGroup(this.group.id, user);
+        const success = this.groupService.deleteGroup(this.group.id);
         if (success) {
           alert("Group successfully deleted");
           this.router.navigate(['/dashboard']);
@@ -164,7 +164,22 @@ export class GroupComponent implements OnInit {
   }
   
 
-  deleteUser(user: User){
+  banUser(user: User){
 
+  }
+  
+  approveUser(user: User){
+    this.groupService.approveInterestedUser(this.group.id,user.id);
+    this.loadGroup(this.group.id);
+    }
+
+  denyUser(user: User){
+    this.groupService.denyInterestedUser(this.group.id,user.id);
+    this.loadGroup(this.group.id);
+  }
+
+  removeUserFromGroup(user: User){
+    this.groupService.removeUserFromGroup(this.group.id,user.id);
+    this.loadGroup(this.group.id);
   }
 }
