@@ -23,7 +23,6 @@ export class DashboardComponent implements OnInit {
   groups: Group[] = [];
   interestedGroups: Group[] = [];
   availableGroups: Group[] = [];
-  selectedGroup: Group | null = null;
   newGroupName: string = '';
   newGroupDescription: string = '';
   canCreateGroup: boolean = false;
@@ -49,14 +48,30 @@ export class DashboardComponent implements OnInit {
     if (typeof loggedInUser === 'string') {
       const user = this.userService.getUserByUsername(loggedInUser);
       this.user = user || new User('', '', '', '');
-      if (user) {
-        this.username = user.username;
-        this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
-        this.groups = user.groups || [];
-        this.interestedGroups = user.interested || [];
-        this.canCreateGroup = this.role === 'superadmin' || this.role === 'admin';
-        this.loadAllUsers(); // Load all users on initialization
-      }
+      if (typeof loggedInUser === 'string') {
+        const user = this.userService.getUserByUsername(loggedInUser);
+        this.user = user || new User('', '', '', '');
+        if (user) {
+            this.username = user.username;
+            this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
+            
+            this.groups = [];
+            if (user.groups) {
+                user.groups.forEach(group => {
+                    const fetchedGroup = this.groupService.getGroupById(group.id);
+                    if (fetchedGroup) {
+                        this.groups.push(fetchedGroup);
+                    }
+                });
+            }
+            this.userService.updateUser(user.id, {groups: this.groups});
+            this.interestedGroups = user.interested || [];
+            this.canCreateGroup = this.role === 'superadmin' || this.role === 'admin';
+
+            this.loadAllUsers(); // Load all users on initialization
+        }
+    }
+
     }
 
     this.loadAvailableGroups();
@@ -98,7 +113,7 @@ export class DashboardComponent implements OnInit {
   }
 
   selectGroup(group: Group) {
-    this.selectedGroup = group;
+    this.router.navigate(['/group', group.id]);
   }
 
   createGroup() {
