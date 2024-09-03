@@ -116,9 +116,9 @@ export class GroupService {
     const user = this.userService.getUserById(userId);
 
     if (group && user) {
+      group.members = group.members.filter(member => member.id !== userId);
       group.admins = group.admins.filter(admin => admin.id !== userId);
-      this.updateGroup(groupId, { admins: group.admins });
-
+      this.updateGroup(groupId, { members: group.members, admins: group.admins });
       this.userService.removeGroupFromUser(userId, groupId);
       return true;
     }
@@ -136,6 +136,7 @@ export class GroupService {
       this.updateGroup(groupId, { admins: group.admins, members: group.members });
     }
   }
+  
   
 
   // Demote an admin from a group
@@ -229,4 +230,18 @@ export class GroupService {
     }
     return null;
   }
-}
+
+
+
+  banUserFromGroup(groupId: string, userId: string){
+    const group = this.getGroupById(groupId);
+    if(group){
+      if (!group.banned) {
+        group.banned = [];
+      }
+      group.banned.push(userId);
+      this.updateGroup(groupId, { banned: group.banned });
+      this.userService.removeGroupFromUser(userId, groupId);
+      }
+    }
+  }

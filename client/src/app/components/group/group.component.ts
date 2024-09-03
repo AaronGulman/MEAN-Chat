@@ -175,7 +175,8 @@ export class GroupComponent implements OnInit {
   
 
   banUser(user: User){
-
+    this.removeUserFromGroup(user);
+    this.groupService.banUserFromGroup(this.group.id, user.id);
   }
   
   approveUser(user: User){
@@ -194,6 +195,25 @@ export class GroupComponent implements OnInit {
   }
 
   leaveGroup(){
-    
+    const confirmDelete = confirm("Are you sure you want to leave this group?");
+    if(!confirmDelete){return;}
+    const superUser = this.userService.getUserByUsername('super');
+    const loggedInUser = this.authService.getLoggedInUser();
+    const user = this.userService.getUserByUsername(loggedInUser);
+    if(user && superUser){
+      if(this.group.admins.length === 1){
+        this.groupService.addUserToGroup(this.group.id,superUser.id);
+        this.userService.addGroupToUser(superUser.id,this.group.id);
+      }
+      this.removeUserFromGroup(user);
+      this.userService.removeGroupFromUser(user.id,this.group.id);
+    }
+    this.group = this.groupService.getGroupById(this.group.id) || new Group('', '');
+    this.goBack();
   }
+
+  getUsernameById(userId: string): string {
+    const user = this.userService.getUserById(userId);
+    return user ? user.username : 'Unknown';
+}
 }

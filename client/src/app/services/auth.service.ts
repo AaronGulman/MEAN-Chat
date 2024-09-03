@@ -61,7 +61,7 @@ export class AuthService {
   }
 
 
-  getLoggedInUser(): string | null {
+  getLoggedInUser(): string {
     const username = sessionStorage.getItem('loggedInUser');
     return username ? JSON.parse(username) : null;
   }

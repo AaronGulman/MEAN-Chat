@@ -77,9 +77,10 @@ export class DashboardComponent implements OnInit {
       const isUserMember = this.groups.some(userGroup => userGroup.id === group.id);
       const isUserInterested = userInterestedGroups.some(interestedGroup => interestedGroup.id === group.id);
       const isPending = this.registrationStatus[group.id] === 'Pending';
-
-      return !isUserMember && (!isUserInterested || isPending);
-    });
+      const isUserBanned = group.banned && group.banned.includes(this.user.id); // Adjust `this.currentUser.id` according to how you access the current user's ID
+    
+      return !isUserMember && (!isUserInterested || isPending) && !isUserBanned;
+    });    
 
     this.availableGroups.forEach(group => {
       if (!(group.id in this.registrationStatus)) {
