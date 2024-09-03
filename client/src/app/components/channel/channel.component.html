@@ -1,1 +1,92 @@
-<p>channel works!</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channel Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row vh-100">
+            <!-- Sidebar/Nav Bar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-content">
+                    <h3 class="text-center">MEAN Chat</h3>
+                    <p class="text-center">Current Role: {{ role }}</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'channel'}" (click)="selectNavItem('channel')">Channel Chat</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')">Settings</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="logout-btn-container d-flex justify-content-center mt-3">
+                    <button class="btn btn-danger" (click)="goBack()">Back</button>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-4">
+                <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">{{ group.name }} | #{{channel.name}}</h1>
+                </div>
+
+                <!-- Channel Main View -->
+                <div *ngIf="selectedNav === 'channel'" class="d-flex justify-content-center align-items-center vh-75">
+                    <h4>Implemented later</h4>
+                </div>
+
+                <!-- Settings Tab -->
+                <div *ngIf="selectedNav === 'settings'">
+                    <h4>Channel Settings</h4>
+                    <form (ngSubmit)="updateChannel()">
+                        <div class="mb-3">
+                            <label for="channelName" class="form-label">Channel Name</label>
+                            <input 
+                                type="text" 
+                                id="channelName" 
+                                class="form-control" 
+                                [(ngModel)]="channel.name" 
+                                name="channelName" 
+                                [disabled]="!isCurrentUserAdmin()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="channelDescription" class="form-label">Channel Description</label>
+                            <textarea 
+                                id="channelDescription" 
+                                class="form-control" 
+                                [(ngModel)]="channel.description" 
+                                name="channelDescription" 
+                                required
+                                [disabled]="!isCurrentUserAdmin()">
+                            </textarea>
+                        </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <!-- Delete Channel button visible to admins -->
+                            <button 
+                                *ngIf="isCurrentUserAdmin()" 
+                                type="button" 
+                                class="btn btn-danger" 
+                                (click)="confirmDeleteChannel()">
+                                Delete Channel
+                            </button>
+                            <!-- Update Channel button visible to admins -->
+                            <button 
+                                *ngIf="isCurrentUserAdmin()" 
+                                type="submit" 
+                                class="btn btn-primary">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

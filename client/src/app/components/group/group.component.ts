@@ -91,16 +91,13 @@ export class GroupComponent implements OnInit {
     }
   }
 
-  joinChannel(channel: Channel) {
-    // Implement join channel logic here
-  }
 
   updateGroup() {
     const loggedInUser = this.authService.getLoggedInUser();
     if (typeof loggedInUser === 'string') {
       const user = this.userService.getUserByUsername(loggedInUser);
       if (user) {
-        const updatedGroup = this.groupService.updateGroup(this.group.id, { description: this.group.description });
+        const updatedGroup = this.groupService.updateGroup(this.group.id, { name: this.group.name,description: this.group.description });
         if (updatedGroup) {
           this.group = updatedGroup;
           alert("Group details updated");
@@ -109,6 +106,11 @@ export class GroupComponent implements OnInit {
         }
       }
     }
+  }
+
+  selectChannel(channel: Channel) {
+    console.log(channel);
+    this.router.navigate(['/channel'+ '/' + this.group.id+'/'+channel.id]);
   }
 
   confirmDeleteGroup() {

@@ -6,7 +6,6 @@ import { Channel } from '../models/channel.model';
   providedIn: 'root',
 })
 export class ChannelService {
-
   constructor() {}
 
   // Retrieve all channels for a specific group from local storage

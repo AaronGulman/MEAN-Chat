@@ -11,5 +11,5 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'group/:id', component: GroupComponent }, 
-  { path: 'channel/:channelId', component: ChannelComponent },
+  { path: 'channel/:groupId/:channelId', component: ChannelComponent },
 ];
