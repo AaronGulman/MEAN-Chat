@@ -13,7 +13,7 @@ export class GroupService {
   constructor(private userService: UserService) {}
 
   // Retrieve all groups from local storage
-  private getGroups(): Group[] {
+  public getGroups(): Group[] {
     const groups = localStorage.getItem(this.localStorageKey);
     return groups ? JSON.parse(groups) : [];
   }
@@ -165,4 +165,29 @@ export class GroupService {
   private isSuperAdmin(user: User): boolean {
     return user.roles.includes('superadmin');
   }
+
+  // Register a user as interested in a group
+  registerUserToGroup(groupId: string, userId: string): boolean {
+    const groups = this.getGroups();
+    const group = groups.find(g => g.id === groupId);
+    const user = this.userService.getUserById(userId);
+  
+    if (group && user) {
+      // Ensure interested is initialized as an array
+      group.interested = group.interested || [];
+  
+      if (!group.interested.some(u => u.id === userId)) {
+        group.interested.push(user);
+        this.saveGroups(groups);
+        return true; // Notify success
+      } else {
+        console.error('User is already interested');
+        return false;
+      }
+    } else {
+      console.error('Group or user not found');
+      return false;
+    }
+  }
+  
 }

@@ -128,4 +128,17 @@ export class UserService {
   clearLoggedInUser(): void {
     sessionStorage.removeItem('loggedInUser');
   }
+
+  // Add a group to a user’s interests
+  addInterestToUser(userId: string, group: Group): User | null {
+    const user = this.getUserById(userId);
+    if (user) {
+      if (!user.interested.some(g => g.id === group.id)) {
+        user.interested.push(group);
+        this.updateUser(userId, { interested: user.interested });
+      }
+      return user;
+    }
+    return null;
+  }
 }

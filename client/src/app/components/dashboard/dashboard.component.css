@@ -1,0 +1,165 @@
+/* Sidebar Navigation Styles */
+.nav-link {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    color: #333;
+    text-decoration: none;
+    border-radius: 0.25rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 1rem;
+}
+
+.nav-link.active {
+    background-color: #007bff; /* Highlight color */
+    color: #fff; /* Text color when active */
+    font-weight: 600; /* Bold text */
+}
+
+.nav-link:hover {
+    background-color: #e9ecef; /* Light grey background on hover */
+    color: #007bff; /* Text color on hover */
+}
+
+.nav-item {
+    margin-bottom: 0.5rem; /* Space between items */
+}
+
+/* Sidebar Styling */
+.sidebar {
+    background-color: #f8f9fa; /* Light background color */
+    border-right: 1px solid #dee2e6; /* Subtle border */
+}
+
+.sidebar-content {
+    padding: 1.5rem; /* Space around content */
+}
+
+.sidebar h3 {
+    font-size: 1.75rem; /* Larger font size */
+    font-weight: 700; /* Bold text */
+    color: #343a40; /* Darker color for the title */
+    margin-bottom: 1rem;
+}
+
+.sidebar p {
+    font-size: 1.1rem;
+    color: #6c757d; /* Gray color */
+    margin-bottom: 1.5rem;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+.modal-title {
+    font-size: 1.5rem; /* Larger font size for modal title */
+}
+
+.modal-body {
+    padding: 2rem; /* Increased padding */
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+/* Logout Button Styling */
+.logout-btn-container {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6; /* Border above logout button */
+}
+
+.btn-danger {
+    border-radius: 0.25rem;
+    font-weight: 600; /* Bold text */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    font-size: 1rem;
+    padding: 0.5rem 1rem; /* Padding for better click area */
+}
+
+.btn-danger:hover {
+    background-color: #c82333; /* Darker red on hover */
+    border-color: #bd2130; /* Darker red border */
+}
+
+/* Card Styles */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    border-radius: 0.5rem; /* Rounded corners */
+    overflow: hidden; /* Ensure rounded corners are visible */
+}
+
+.card:hover {
+    transform: scale(1.03); /* Slightly enlarge the card */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Add a shadow effect */
+}
+
+.card-body {
+    transition: background-color 0.3s ease;
+}
+
+/* Optional: Change card body background color on hover */
+.card:hover .card-body {
+    background-color: #f8f9fa; /* Light background on hover */
+}
+
+/* Title Styles */
+.card-title {
+    font-size: 1.5rem; /* Increase font size */
+    font-weight: 600; /* Semi-bold text */
+    color: #343a40; /* Dark color for better readability */
+    margin-bottom: 0.5rem; /* Space below the title */
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+
+.pending-card {
+    position: relative;
+    background-color: #f8f9fa; /* Light grey background */
+    opacity: 0.5; /* Grey out the card */
+  }
+  
+  .pending-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9); /* Slight white background for better readability */
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    color: #dc3545; /* Red color for 'Pending' */
+    z-index: 1;
+  }
+  
+
+  .card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 0.25rem;
+}
+.card-container {
+    position: relative;
+}
+.card-container:hover .card-overlay {
+    display: flex;
+}
