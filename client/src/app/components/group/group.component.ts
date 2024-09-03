@@ -82,8 +82,7 @@ export class GroupComponent implements OnInit {
 
     const loggedInUser = this.authService.getLoggedInUser();
     if (typeof loggedInUser === 'string') {
-      const user = this.userService.getUserByUsername(loggedInUser);
-      const newChannel = this.channelService.createChannel(this.newChannelName,this.group.id);
+      const newChannel = this.channelService.createChannel(this.newChannelName,this.group.id,this.newChannelDescription);
       this.groupService.addChannelToGroup(this.group.id, newChannel);
       this.group.channels.push(newChannel);
       this.newChannelName = '';
@@ -204,6 +203,8 @@ export class GroupComponent implements OnInit {
       if(this.group.admins.length === 1){
         this.groupService.addUserToGroup(this.group.id,superUser.id);
         this.userService.addGroupToUser(superUser.id,this.group.id);
+        this.userService.removeInterestedGroupFromUser(superUser.id,this.group.id);
+        this.denyUser(superUser);
       }
       this.removeUserFromGroup(user);
       this.userService.removeGroupFromUser(user.id,this.group.id);

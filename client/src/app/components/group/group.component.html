@@ -48,8 +48,9 @@
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <h5 class="card-title">{{ channel.name }}</h5>
-                                    <p class="card-text"><strong>Members:</strong> {{ channel.members.length }}</p>
-                                    <button class="btn btn-primary" (click)="joinChannel(channel)">Join</button>
+                                    <p class="card-text">{{ channel.description }}</p>
+                                    <!-- <p class="card-text"><strong>Members:</strong> {{ channel.members.length }}</p> -->
+                                    <!-- <button class="btn btn-primary" (click)="joinChannel(channel)">Join</button> -->
                                 </div>
                             </div>
                         </div>
@@ -78,7 +79,7 @@
                 class="form-control" 
                 [(ngModel)]="group.name" 
                 name="groupName" 
-                [disabled]="role === 'user'">
+                [disabled]="!isCurrentUserAdmin()">
         </div>
         <div class="mb-3">
             <label for="groupDescription" class="form-label">Group Description</label>
@@ -88,7 +89,7 @@
                 [(ngModel)]="group.description" 
                 name="groupDescription" 
                 required
-                [disabled]="role === 'user'">
+                [disabled]="!isCurrentUserAdmin()">
             </textarea>
         </div>
         <div class="d-flex justify-content-between mt-3">
@@ -102,7 +103,7 @@
             </button>
             <!-- Delete Group button visible to admins and superadmins -->
             <button 
-                *ngIf="role === 'admin' || role === 'superadmin'" 
+                *ngIf="isCurrentUserAdmin() || role === 'superadmin'" 
                 type="button" 
                 class="btn btn-danger" 
                 (click)="confirmDeleteGroup()">
@@ -110,7 +111,7 @@
             </button>
             <!-- Update Details button visible to admins and superadmins -->
             <button 
-                *ngIf="role === 'admin' || role === 'superadmin'" 
+                *ngIf="isCurrentUserAdmin() || role === 'superadmin'" 
                 type="submit" 
                 class="btn btn-primary">
                 Update Details

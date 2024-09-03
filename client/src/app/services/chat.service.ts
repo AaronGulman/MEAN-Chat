@@ -26,9 +26,9 @@ export class ChannelService {
   }
 
   // Create a new channel for a specific group
-  createChannel(name: string, groupId: string): Channel {
+  createChannel(name: string, groupId: string, description: string = ""): Channel {
     const id = Date.now().toString();
-    const newChannel = new Channel(id, name, groupId);
+    const newChannel = new Channel(id, name, groupId, description);
     const channels = this.getChannels(groupId);
     channels.push(newChannel);
     this.saveChannels(groupId, channels);
