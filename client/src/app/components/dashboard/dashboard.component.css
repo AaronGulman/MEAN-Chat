@@ -162,4 +162,25 @@
 }
 .card-container:hover .card-overlay {
     display: flex;
+}/* Add these styles to your dashboard.component.css or global styles */
+
+.btn-success {
+    background-color: #28a745; /* Light green */
+    border-color: #28a745;
+}
+
+.btn-danger {
+    background-color: #dc3545; /* Red */
+    border-color: #dc3545;
+}
+
+.btn-sm {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
 }

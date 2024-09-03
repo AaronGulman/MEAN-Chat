@@ -26,102 +26,147 @@
                         </li>
                     </ul>
                 </div>
-                <div class="logout-btn-container d-flex justify-content-center">
+                <div class="logout-btn-container d-flex justify-content-center mt-3">
                     <button class="btn btn-danger" (click)="logout()">Logout</button>
                 </div>
             </nav>
+
             <!-- Main Content -->
             <main class="col-md-10 ms-sm-auto px-4">
                 <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Welcome, {{username}}</h1>
                 </div>
+
                 <div *ngIf="selectedNav === 'groups'">
-                <div class="row">
-                    
-                    <!-- Groups List -->
-                    <div class="col-12">
-                        <h4>Groups</h4>
-                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            <!-- Group Cards -->
-                            <div class="col" *ngFor="let group of groups">
-                                <div class="card mb-3" (click)="selectGroup(group)">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ group.name }}</h5>
-                                        <p class="card-text">{{ group.description }}</p>
-                                        <p class="card-text"><strong>Members:</strong> {{ group.admins.length }}</p>
-                                        <p class="card-text"><strong>Channels:</strong> {{ group.channels.length }}</p>
+                    <div class="row">
+                        <!-- Groups List -->
+                        <div class="col-12">
+                            <h4>Groups</h4>
+                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                <!-- Group Cards -->
+                                <div class="col" *ngFor="let group of groups">
+                                    <div class="card mb-3" (click)="selectGroup(group)">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ group.name }}</h5>
+                                            <p class="card-text">{{ group.description }}</p>
+                                            <p class="card-text"><strong>Members:</strong> {{ group.admins.length }}</p>
+                                            <p class="card-text"><strong>Channels:</strong> {{ group.channels.length }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>                            
-                            <!-- Card for Registering New Groups (for chat users) -->
-                            <div class="col" *ngIf="role === 'user'">
-                                <div class="card mb-3" (click)="openRegisterGroupModal()">
-                                    <div class="card-body text-center">
-                                        <h5 class="card-title">Register for New Groups</h5>
-                                        <p class="card-text">Click here to find and register for new groups.</p>
+
+                                <!-- Card for Registering New Groups (for chat users) -->
+                                <div class="col" *ngIf="role === 'user'">
+                                    <div class="card mb-3" (click)="openRegisterGroupModal()">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Register for New Groups</h5>
+                                            <p class="card-text">Click here to find and register for new groups.</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <!-- Card for Creating New Group (for admin/superadmin) -->
-                            <div class="col" *ngIf="role === 'admin' || role === 'superadmin'">
-                                <div class="card mb-3" (click)="openCreateGroupModal()">
-                                    <div class="card-body text-center">
-                                        <h5 class="card-title">Create New Group</h5>
-                                        <p class="card-text">Click here to create a new group.</p>
+
+                                <!-- Card for Creating New Group (for admin/superadmin) -->
+                                <div class="col" *ngIf="role === 'admin' || role === 'superadmin'">
+                                    <div class="card mb-3" (click)="openCreateGroupModal()">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Create New Group</h5>
+                                            <p class="card-text">Click here to create a new group.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                
 
-                    <!-- Interested Groups List -->
-                    <div class="col-12 mt-4" *ngIf="interestedGroups.length > 0">
-                        <h4>Interested Groups</h4>
-                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            <div class="col" *ngFor="let group of interestedGroups">
-                                <div class="card card-container mb-3">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ group.name }}</h5>
-                                        <p class="card-text">{{ group.description }}</p>
-                                        <p class="card-text"><strong>Members:</strong> {{ group.admins.length }}</p>
-                                        <p class="card-text"><strong>Channels:</strong> {{ group.channels.length }}</p>
-                                    </div>
-                                    <div class="card-overlay" *ngIf="registrationStatus[group.id] === 'Pending'">
-                                        Pending
+                        <!-- Interested Groups List -->
+                        <div class="col-12 mt-4" *ngIf="interestedGroups.length > 0">
+                            <h4>Interested Groups</h4>
+                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                <div class="col" *ngFor="let group of interestedGroups">
+                                    <div class="card card-container mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ group.name }}</h5>
+                                            <p class="card-text">{{ group.description }}</p>
+                                            <p class="card-text"><strong>Members:</strong> {{ group.admins.length }}</p>
+                                            <p class="card-text"><strong>Channels:</strong> {{ group.channels.length }}</p>
+                                        </div>
+                                        <div class="card-overlay" *ngIf="registrationStatus[group.id] === 'Pending'">
+                                            Pending
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Settings Form -->
+                <div *ngIf="selectedNav === 'settings'">
+                    <h4>User Settings</h4>
+                    <form (ngSubmit)="updateUser()">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" id="username" class="form-control" [(ngModel)]="user.username" name="username" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" class="form-control" [(ngModel)]="user.email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" class="form-control" [(ngModel)]="user.password" name="password">
+                        </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="button" class="btn btn-danger" (click)="deleteUser(user)">Delete Account</button>
+                            <button type="submit" class="btn btn-primary">Update Details</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Users List -->
+                <div *ngIf="selectedNav === 'users'">
+                    <h4>Users List</h4>
+                    <div class="row">
+                        <div class="col-12">
+                            <ul class="list-group">
+                                <li *ngFor="let user of allUsers" class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
+                                        <p class="mb-1">Roles: <span *ngFor="let role of user.roles; let isLast = last">
+                                            {{ role }}<span *ngIf="!isLast">, </span>
+                                        </span></p>
+                                    </div>
+                                    <div>
+                                        <ng-container *ngIf="canPromote(user)">
+                                            <button 
+                                                class="btn btn-success btn-sm me-2"
+                                                (click)="promoteUser(user)">
+                                                Promote
+                                            </button>
+                                        </ng-container>
+                                        <ng-container *ngIf="canDemote(user)">
+                                            <button 
+                                                class="btn btn-danger btn-sm me-2"
+                                                (click)="demoteUser(user)">
+                                                Demote
+                                            </button>
+                                        </ng-container>
+                                        <ng-container *ngIf="user.roles.includes('user')">
+                                            <button 
+                                                class="btn btn-danger btn-sm me-2"
+                                                (click)="deleteUser(user)">
+                                                Delete
+                                            </button>
+                                        </ng-container>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
 
+                
 
-            <div *ngIf="selectedNav === 'settings'">
-                <h4>User Settings</h4>
-                <form (ngSubmit)="updateUser()">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" id="username" class="form-control" [(ngModel)]="user.username" name="username" disabled>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" id="email" class="form-control" [(ngModel)]="user.email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" class="form-control" [(ngModel)]="user.password" name="password">
-                    </div>
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-danger" (click)="deleteUser()">Delete Account</button>
-                        <button type="submit" class="btn btn-primary">Update Details</button>
-                    </div>
-                </form>
-            </div>
-            
-            
                 
                 <!-- Register New Group Modal -->
                 <div class="modal fade" id="registerGroupModal" tabindex="-1" aria-labelledby="registerGroupModalLabel" aria-hidden="true">
@@ -154,7 +199,7 @@
                     </div>
                 </div>
 
-                <!-- Create New Group Modal (for admin/superadmin) -->
+                <!-- Create New Group Modal -->
                 <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -164,12 +209,12 @@
                             </div>
                             <div class="modal-body">
                                 <form (ngSubmit)="createGroup()">
-                                    <div class="form-group mb-3">
-                                        <label for="groupName">Group Name:</label>
+                                    <div class="mb-3">
+                                        <label for="groupName" class="form-label">Group Name</label>
                                         <input id="groupName" class="form-control" [(ngModel)]="newGroupName" name="groupName" required>
                                     </div>
-                                    <div class="form-group mb-3">
-                                        <label for="groupDescription">Group Description:</label>
+                                    <div class="mb-3">
+                                        <label for="groupDescription" class="form-label">Group Description</label>
                                         <textarea id="groupDescription" class="form-control" [(ngModel)]="newGroupDescription" name="groupDescription" required></textarea>
                                     </div>
                                     <button type="submit" class="btn btn-primary mt-2">Create Group</button>
@@ -183,5 +228,3 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

@@ -9,7 +9,7 @@ export class UserService {
   private localStorageKey = 'users';
 
   constructor() {
-    if(!this.getUserByUsername("super")){
+    if (!this.getUserByUsername("super")) {
       this.initializeDefaultUsers();
     }
   }
@@ -17,7 +17,7 @@ export class UserService {
   // Initialize default users
   private initializeDefaultUsers(): void {
     const superUser = new User(
-      Date.now().toString(), // Generate a unique ID for the super user
+      Date.now().toString(),
       'super',
       'super@example.com',
       '123',
@@ -141,4 +141,38 @@ export class UserService {
     }
     return null;
   }
+
+  // Promote a user to admin or superadmin
+  promoteUser(userId: string): User | null {
+    const user = this.getUserById(userId);
+    if (user) {
+        if (user.roles.includes('user')) {
+            // Promote user to admin
+            return this.updateUser(userId, { roles: ['admin'] });
+        } else if (user.roles.includes('admin')) {
+            // Promote admin to superadmin
+            return this.updateUser(userId, { roles: ['superadmin'] });
+        }
+    }
+    return null;
+}
+
+
+  // Demote a user from admin to user
+  // Demote a user from admin or superadmin to user
+  demoteUser(userId: string): User | null {
+    const user = this.getUserById(userId);
+    if (user) {
+        if (user.roles.includes('superadmin')) {
+            // Superadmin cannot be demoted
+            return null;
+        }
+        if (user.roles.includes('admin')) {
+            // Demote admin to user
+            return this.updateUser(userId, { roles: ['user'] });
+        }
+    }
+    return null;
+  }
+
 }

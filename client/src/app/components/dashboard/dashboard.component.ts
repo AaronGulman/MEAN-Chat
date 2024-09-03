@@ -1,4 +1,4 @@
-declare var bootstrap: any; // Declare bootstrap globally
+declare var bootstrap: any;
 import { Component, OnInit } from '@angular/core';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
@@ -19,7 +19,7 @@ import { User } from '../../models/user.model';
 })
 export class DashboardComponent implements OnInit {
   username: string = '';
-  user: User = new User('','','','');
+  user: User = new User('', '', '', '');
   groups: Group[] = [];
   interestedGroups: Group[] = [];
   availableGroups: Group[] = [];
@@ -29,7 +29,8 @@ export class DashboardComponent implements OnInit {
   canCreateGroup: boolean = false;
   role: string = '';
   selectedNav: string = 'groups';
-  registrationStatus: { [groupId: string]: string } = {}; // Track registration status
+  registrationStatus: { [groupId: string]: string } = {};
+  allUsers: User[] = []; // Added to store all users
 
   constructor(
     private groupService: GroupService,
@@ -45,22 +46,20 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    // Initialize user data
     if (typeof loggedInUser === 'string') {
       const user = this.userService.getUserByUsername(loggedInUser);
-      this.user = user || new User('','','','');
+      this.user = user || new User('', '', '', '');
       if (user) {
         this.username = user.username;
         this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
         this.groups = user.groups || [];
-        this.interestedGroups = user.interested || []; // Initialize interested groups
+        this.interestedGroups = user.interested || [];
         this.canCreateGroup = this.role === 'superadmin' || this.role === 'admin';
+        this.loadAllUsers(); // Load all users on initialization
       }
     }
 
     this.loadAvailableGroups();
-
-
   }
 
   loadAvailableGroups() {
@@ -68,51 +67,38 @@ export class DashboardComponent implements OnInit {
     const user = this.userService.getUserByUsername(this.username);
     const userInterestedGroups = user?.interested || [];
 
-    // Set interestedGroups
     this.interestedGroups = userInterestedGroups;
-
-    // Initialize registrationStatus for all groups
     this.registrationStatus = {};
 
-    // Set registration status for interested groups
     userInterestedGroups.forEach(group => {
-        this.registrationStatus[group.id] = 'Pending'; // Assuming interested groups are in 'Pending' status
+      this.registrationStatus[group.id] = 'Pending';
     });
 
-    // Determine available groups
     this.availableGroups = allGroups.filter(group => {
-        const isUserMember = this.groups.some(userGroup => userGroup.id === group.id);
-        const isUserInterested = userInterestedGroups.some(interestedGroup => interestedGroup.id === group.id);
-        const isPending = this.registrationStatus[group.id] === 'Pending';
+      const isUserMember = this.groups.some(userGroup => userGroup.id === group.id);
+      const isUserInterested = userInterestedGroups.some(interestedGroup => interestedGroup.id === group.id);
+      const isPending = this.registrationStatus[group.id] === 'Pending';
 
-        // Show group if:
-        // 1. User is not a member of the group
-        // 2. User is not interested in the group, or if the group is in 'Pending' status
-        return !isUserMember && (!isUserInterested || isPending);
+      return !isUserMember && (!isUserInterested || isPending);
     });
 
-    console.log(this.availableGroups);
-
-    // Set registration status for available groups
     this.availableGroups.forEach(group => {
-        if (!(group.id in this.registrationStatus)) {
-            this.registrationStatus[group.id] = 'Register';
-        }
+      if (!(group.id in this.registrationStatus)) {
+        this.registrationStatus[group.id] = 'Register';
+      }
     });
-}
+  }
 
-
-  
-  
+  loadAllUsers() {
+    this.allUsers = this.userService.getUsers();
+  }
 
   selectNavItem(navItem: string) {
     this.selectedNav = navItem;
-    // Add any additional logic needed when a navigation item is selected
   }
 
   selectGroup(group: Group) {
     this.selectedGroup = group;
-    // Add logic to handle group selection if needed
   }
 
   createGroup() {
@@ -128,9 +114,9 @@ export class DashboardComponent implements OnInit {
         if (newGroup) {
           this.userService.addGroupToUser(user.id, newGroup);
           this.groups.push(newGroup);
-          this.newGroupName = ''; // Clear the input field
-          this.newGroupDescription = ''; // Clear the description field
-          this.closeCreateGroupModal(); // Close the modal
+          this.newGroupName = '';
+          this.newGroupDescription = '';
+          this.closeCreateGroupModal();
         }
       }
     }
@@ -177,43 +163,77 @@ export class DashboardComponent implements OnInit {
     if (user) {
       const success = this.groupService.registerUserToGroup(group.id, user.id);
       if (success) {
-        this.registrationStatus[group.id] = 'Pending'; // Update registration status
-        this.interestedGroups.push(group); // Optionally add the group to the user's list
-        this.userService.addInterestToUser(user.id, group); // Add to interests
-        this.closeRegisterGroupModal(); // Close the modal
+        this.registrationStatus[group.id] = 'Pending';
+        this.interestedGroups.push(group);
+        this.userService.addInterestToUser(user.id, group);
+        this.closeRegisterGroupModal();
       } else {
         console.error('User is already interested or registration failed');
-        // Handle failure case if needed
       }
     } else {
       console.error('User not found');
-      // Handle the case where the user is not found, e.g., show an error message
     }
   }
 
-
-
   logout() {
-    this.authService.clearLoggedInUser(); // Clear session storage
-    this.router.navigate(['/login']); // Redirect to login page
+    this.authService.clearLoggedInUser();
+    this.router.navigate(['/login']);
   }
-
 
   updateUser() {
     const updatedData = {
       email: this.user.email,
       password: this.user.password
     };
-    this.userService.updateUser(this.user.id,updatedData);
+    this.userService.updateUser(this.user.id, updatedData);
     alert("Details Updated");
     this.selectedNav = "groups";
   }
 
-  deleteUser() {
-    const confirmDelete = confirm('Are you sure you want to delete your account?');
+  deleteUser(user: User) {
+    const confirmDelete = confirm('Are you sure you want to delete this account?');
     if (confirmDelete) {
-      this.userService.deleteUser(this.user.id);
-      this.logout();
+      this.userService.deleteUser(user.id);
+      if(this.role === "superadmin" && this.selectedNav === "users"){
+        this.loadUsers();
+      }else{
+        this.logout();
+      }
     }
+  }
+
+
+  canPromote(user: User): boolean {
+    // User can be promoted if they are either a 'user' or 'admin'
+    return user.roles.includes('user') || user.roles.includes('admin');
+  }
+
+
+  
+  canDemote(user: User): boolean {
+    return user.roles.includes('admin');
+  }
+  promoteUser(user: User): void {
+    if (user.roles.includes('user') || user.roles.includes('admin')) {
+      // Promote user to admin
+      this.userService.promoteUser(user.id);
+      // Refresh user list
+      this.loadUsers();
+    }
+  }
+
+  // Demote a user from admin to user
+  demoteUser(user: User): void {
+    if (user.roles.includes('admin')) {
+      // Demote user to user
+      this.userService.demoteUser(user.id);
+      // Refresh user list
+      this.loadUsers();
+    }
+  }
+
+
+  loadUsers(): void {
+    this.allUsers = this.userService.getUsers();
   }
 }
