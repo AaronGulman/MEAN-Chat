@@ -10,40 +10,40 @@
 }
 
 .nav-link.active {
-    background-color: #007bff; /* Highlight color */
-    color: #fff; /* Text color when active */
-    font-weight: 600; /* Bold text */
+    background-color: #007bff;
+    color: #fff;
+    font-weight: 600;
 }
 
 .nav-link:hover {
-    background-color: #e9ecef; /* Light grey background on hover */
-    color: #007bff; /* Text color on hover */
+    background-color: #e9ecef;
+    color: #007bff;
 }
 
 .nav-item {
-    margin-bottom: 0.5rem; /* Space between items */
+    margin-bottom: 0.5rem;
 }
 
 /* Sidebar Styling */
 .sidebar {
-    background-color: #f8f9fa; /* Light background color */
-    border-right: 1px solid #dee2e6; /* Subtle border */
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
 }
 
 .sidebar-content {
-    padding: 1.5rem; /* Space around content */
+    padding: 1.5rem;
 }
 
 .sidebar h3 {
-    font-size: 1.75rem; /* Larger font size */
-    font-weight: 700; /* Bold text */
-    color: #343a40; /* Darker color for the title */
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #343a40;
     margin-bottom: 1rem;
 }
 
 .sidebar p {
     font-size: 1.1rem;
-    color: #6c757d; /* Gray color */
+    color: #6c757d;
     margin-bottom: 1.5rem;
 }
 
@@ -59,11 +59,11 @@
 }
 
 .modal-title {
-    font-size: 1.5rem; /* Larger font size for modal title */
+    font-size: 1.5rem;
 }
 
 .modal-body {
-    padding: 2rem; /* Increased padding */
+    padding: 2rem;
 }
 
 .modal-footer {
@@ -74,75 +74,95 @@
 /* Logout Button Styling */
 .logout-btn-container {
     padding: 1rem;
-    border-top: 1px solid #dee2e6; /* Border above logout button */
+    border-top: 1px solid #dee2e6;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
 }
 
 .btn-danger {
-    border-radius: 0.25rem;
-    font-weight: 600; /* Bold text */
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-    font-size: 1rem;
-    padding: 0.5rem 1rem; /* Padding for better click area */
+    background-color: #dc3545;
+    border-color: #dc3545;
 }
 
-.btn-danger:hover {
-    background-color: #c82333; /* Darker red on hover */
-    border-color: #bd2130; /* Darker red border */
+.btn-sm {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
 }
 
 /* Card Styles */
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
-    border-radius: 0.5rem; /* Rounded corners */
-    overflow: hidden; /* Ensure rounded corners are visible */
-}
-
-.card:hover {
-    transform: scale(1.03); /* Slightly enlarge the card */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Add a shadow effect */
+    border-radius: 0.5rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
 }
 
 .card-body {
-    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-/* Optional: Change card body background color on hover */
+.card-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-container .card {
+    flex-grow: 1;
+}
+
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
 .card:hover .card-body {
-    background-color: #f8f9fa; /* Light background on hover */
+    background-color: #f8f9fa;
 }
 
-/* Title Styles */
 .card-title {
-    font-size: 1.5rem; /* Increase font size */
-    font-weight: 600; /* Semi-bold text */
-    color: #343a40; /* Dark color for better readability */
-    margin-bottom: 0.5rem; /* Space below the title */
-    transition: color 0.3s ease, text-shadow 0.3s ease;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 0.5rem;
 }
-
 
 .pending-card {
     position: relative;
-    background-color: #f8f9fa; /* Light grey background */
-    opacity: 0.5; /* Grey out the card */
-  }
-  
-  .pending-overlay {
+    background-color: #f8f9fa;
+    opacity: 0.5;
+}
+
+.pending-overlay {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: rgba(255, 255, 255, 0.9); /* Slight white background for better readability */
+    background-color: rgba(255, 255, 255, 0.9);
     padding: 0.5rem 1rem;
     border-radius: 0.25rem;
     font-weight: bold;
-    color: #dc3545; /* Red color for 'Pending' */
+    color: #dc3545;
     z-index: 1;
-  }
-  
+}
 
-  .card-overlay {
+.card-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -157,30 +177,7 @@
     font-weight: bold;
     border-radius: 0.25rem;
 }
-.card-container {
-    position: relative;
-}
+
 .card-container:hover .card-overlay {
     display: flex;
-}/* Add these styles to your dashboard.component.css or global styles */
-
-.btn-success {
-    background-color: #28a745; /* Light green */
-    border-color: #28a745;
-}
-
-.btn-danger {
-    background-color: #dc3545; /* Red */
-    border-color: #dc3545;
-}
-
-.btn-sm {
-    font-size: 0.875rem;
-    padding: 0.25rem 0.5rem;
-    line-height: 1.5;
-    border-radius: 0.2rem;
-}
-
-.me-2 {
-    margin-right: 0.5rem;
 }
