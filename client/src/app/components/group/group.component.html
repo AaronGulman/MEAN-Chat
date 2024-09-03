@@ -1,1 +1,161 @@
-<p>group works!</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row vh-100">
+            <!-- Sidebar/Nav Bar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-content">
+                    <h3 class="text-center">MEAN Chat</h3>
+                    <p class="text-center">Current Role: {{role}}</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'channels'}" (click)="selectNavItem('channels')">Channels</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'users'}" (click)="selectNavItem('users')">Users</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')">Settings</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="logout-btn-container d-flex justify-content-center mt-3">
+                    <button class="btn btn-danger" (click)="goBack()">Back</button>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-4">
+                <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Group: {{group.name}}</h1>
+                </div>
+                <div *ngIf="selectedNav === 'channels'">
+                <!-- Channel Cards -->
+                <div class="row">
+                    <div class="col-12">
+                        <h4>Channels</h4>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                            <!-- Channel Cards -->
+                            <div class="col" *ngFor="let channel of group.channels">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ channel.name }}</h5>
+                                        <p class="card-text"><strong>Members:</strong> {{ channel.members.length }}</p>
+                                        <button class="btn btn-primary" (click)="joinChannel(channel)">Join</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Create New Channel Card (for admin/superadmin) -->
+                            <div class="col" *ngIf="role === 'admin' || role === 'superadmin'">
+                                <div class="card mb-3" (click)="openCreateChannelModal()">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Create New Channel</h5>
+                                        <p class="card-text">Click here to create a new channel.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <!-- Settings Form -->
+            <div *ngIf="selectedNav === 'settings'">
+                <h4>Group Settings</h4>
+                <form (ngSubmit)="updateGroup()">
+                    <div class="mb-3">
+                        <label for="groupName" class="form-label">Group Name</label>
+                        <input type="text" id="groupName" class="form-control" [(ngModel)]="group.name" name="groupName" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="groupDescription" class="form-label">Group Description</label>
+                        <textarea id="groupDescription" class="form-control" [(ngModel)]="group.description" name="groupDescription" required></textarea>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-danger" (click)="confirmDeleteGroup()">Delete Group</button>
+                        <button type="submit" class="btn btn-primary">Update Details</button>
+                    </div>
+                </form>
+            </div>
+
+
+                <!-- Users List -->
+                <div *ngIf="selectedNav === 'users'">
+                    <h4>Group Users</h4>
+                    <div class="row">
+                        <div class="col-12">
+                            <ul class="list-group">
+                                <li *ngFor="let user of group.members" class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
+                                        <p class="mb-1">Roles: <span *ngFor="let role of user.roles; let isLast = last">
+                                            {{ role }}<span *ngIf="!isLast">, </span>
+                                        </span></p>
+                                    </div>
+                                    <div>
+                                        <ng-container *ngIf="canPromote(user)">
+                                            <button 
+                                                class="btn btn-success btn-sm me-2"
+                                                (click)="promoteUser(user)">
+                                                Promote
+                                            </button>
+                                        </ng-container>
+                                        <ng-container *ngIf="canDemote(user)">
+                                            <button 
+                                                class="btn btn-danger btn-sm me-2"
+                                                (click)="demoteUser(user)">
+                                                Demote
+                                            </button>
+                                        </ng-container>
+                                        <ng-container *ngIf="user.roles.includes('user')">
+                                            <button 
+                                                class="btn btn-danger btn-sm me-2"
+                                                (click)="deleteUser(user)">
+                                                Delete
+                                            </button>
+                                        </ng-container>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create New Channel Modal -->
+                <div class="modal fade" id="createChannelModal" tabindex="-1" aria-labelledby="createChannelModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="createChannelModalLabel">Create New Channel</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form (ngSubmit)="createChannel()">
+                                    <div class="mb-3">
+                                        <label for="channelName" class="form-label">Channel Name</label>
+                                        <input id="channelName" class="form-control" [(ngModel)]="newChannelName" name="channelName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="channelDescription" class="form-label">Channel Description</label>
+                                        <textarea id="channelDescription" class="form-control" [(ngModel)]="newChannelDescription" name="channelDescription" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mt-2">Create Channel</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

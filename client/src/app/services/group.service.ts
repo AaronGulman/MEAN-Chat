@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Group } from '../models/group.model';
 import { Channel } from '../models/channel.model';
 import { User } from '../models/user.model';
-import { UserService } from './user.service'; // Make sure to import UserService
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -23,8 +23,8 @@ export class GroupService {
     localStorage.setItem(this.localStorageKey, JSON.stringify(groups));
   }
 
-  // Create a new group (can be done by Group Admin or Super Admin)
-  createGroup(name: string, description = "", admin: User[]): Group {
+  // Create a new group
+  createGroup(name: string, description = "", admin: User[], channels: Channel[] = []): Group {
     const id = Date.now().toString();
     const newGroup = new Group(id, name, description, admin);
     const groups = this.getGroups();
@@ -36,13 +36,13 @@ export class GroupService {
   // Update an existing group
   updateGroup(groupId: string, updatedData: Partial<Group>, user: User): Group | null {
     const groups = this.getGroups();
-    const group = groups.find(g => g.id === groupId);
+    const groupIndex = groups.findIndex(g => g.id === groupId);
 
-    if (group) {
-      if (this.isSuperAdmin(user) || (group.admins.includes(user) && group.admins.some(admin => admin.id === user.id))) {
+    if (groupIndex !== -1) {
+      const group = groups[groupIndex];
+      if (this.isSuperAdmin(user) || (group.admins.some(admin => admin.id === user.id))) {
         const updatedGroup = { ...group, ...updatedData };
-        const index = groups.findIndex(g => g.id === groupId);
-        groups[index] = updatedGroup;
+        groups[groupIndex] = updatedGroup;
         this.saveGroups(groups);
         return updatedGroup;
       }
@@ -50,13 +50,13 @@ export class GroupService {
     return null;
   }
 
-  // Delete a group by ID (only by the creator or Super Admin)
+  // Delete a group by ID
   deleteGroup(groupId: string, user: User): boolean {
     const groups = this.getGroups();
     const group = groups.find(g => g.id === groupId);
 
     if (group) {
-      if (this.isSuperAdmin(user) || (group.admins.includes(user) && group.admins.some(admin => admin.id === user.id))) {
+      if (this.isSuperAdmin(user) || (group.admins.some(admin => admin.id === user.id))) {
         const updatedGroups = groups.filter(g => g.id !== groupId);
         if (groups.length !== updatedGroups.length) {
           this.saveGroups(updatedGroups);
@@ -77,11 +77,21 @@ export class GroupService {
   // Add a channel to a group
   addChannelToGroup(groupId: string, channel: Channel, user: User): Group | null {
     const group = this.getGroupById(groupId);
-
-    if (group && (this.isSuperAdmin(user) || (group.admins.includes(user) && group.admins.some(admin => admin.id === user.id)))) {
+    if (group) {
+      group.channels = group.channels || []; // Ensure channels is initialized as an array
       group.channels.push(channel);
-      this.updateGroup(groupId, { channels: group.channels }, user);
-      return group;
+      return this.updateGroup(groupId, { channels: group.channels }, user);
+    }
+    return null;
+  }
+
+  // Remove a channel from a group
+  removeChannelFromGroup(groupId: string, channelId: string, user: User): Group | null {
+    const group = this.getGroupById(groupId);
+    if (group) {
+      group.channels = group.channels || []; // Ensure channels is initialized as an array
+      group.channels = group.channels.filter(channel => channel.id !== channelId);
+      return this.updateGroup(groupId, { channels: group.channels }, user);
     }
     return null;
   }
@@ -92,7 +102,7 @@ export class GroupService {
     const user = this.userService.getUserById(userId);
 
     if (group && user) {
-      if (this.isSuperAdmin(currentUser) || (group.admins.includes(currentUser) && group.admins.some(admin => admin.id === currentUser.id))) {
+      if (this.isSuperAdmin(currentUser) || (group.admins.some(admin => admin.id === currentUser.id))) {
         // Add user to group
         if (!group.admins.some(admin => admin.id === userId)) {
           group.admins.push(user);
@@ -113,7 +123,7 @@ export class GroupService {
     const user = this.userService.getUserById(userId);
 
     if (group && user) {
-      if (this.isSuperAdmin(currentUser) || (group.admins.includes(currentUser) && group.admins.some(admin => admin.id === currentUser.id))) {
+      if (this.isSuperAdmin(currentUser) || (group.admins.some(admin => admin.id === currentUser.id))) {
         // Remove user from group
         group.admins = group.admins.filter(admin => admin.id !== userId);
         this.updateGroup(groupId, { admins: group.admins }, currentUser);
@@ -133,10 +143,9 @@ export class GroupService {
     }
 
     const group = this.getGroupById(groupId);
-    if (group && !group.admins.includes(user)) {
+    if (group && !group.admins.some(admin => admin.id === user.id)) {
       group.admins.push(user);
-      this.updateGroup(groupId, { admins: group.admins }, currentUser);
-      return group;
+      return this.updateGroup(groupId, { admins: group.admins }, currentUser);
     }
     return null;
   }
@@ -146,8 +155,7 @@ export class GroupService {
     const group = this.getGroupById(groupId);
     if (group && (this.isSuperAdmin(currentUser) || (currentUser.id === userId))) {
       group.admins = group.admins.filter(admin => admin.id !== userId);
-      this.updateGroup(groupId, { admins: group.admins }, currentUser);
-      return group;
+      return this.updateGroup(groupId, { admins: group.admins }, currentUser);
     }
     return null;
   }
@@ -173,7 +181,6 @@ export class GroupService {
     const user = this.userService.getUserById(userId);
   
     if (group && user) {
-      // Ensure interested is initialized as an array
       group.interested = group.interested || [];
   
       if (!group.interested.some(u => u.id === userId)) {
@@ -189,5 +196,4 @@ export class GroupService {
       return false;
     }
   }
-  
 }
