@@ -1,8 +1,6 @@
-// group.route.js
-
 const express = require('express');
 const router = express.Router();
-const groupController = require('./group.controller');
+const groupController = require('../controllers/group.controller');
 
 // Route to get all groups
 router.get('/groups', groupController.getAllGroups);

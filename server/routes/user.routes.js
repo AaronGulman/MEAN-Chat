@@ -1,8 +1,6 @@
-// user.route.js
-
 const express = require('express');
 const router = express.Router();
-const userController = require('./user.controller');
+const userController = require('../controllers/user.controller.js');
 
 // Route to get all users
 router.get('/users', userController.getAllUsers);

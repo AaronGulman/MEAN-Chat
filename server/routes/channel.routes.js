@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const channelController = require('../controllers/channel.controller');
+const channelController = require('../controllers/channel.controller.js');
 
 // Route to get all channels for a specific group
 router.get('/channels/:groupId', channelController.getChannels);

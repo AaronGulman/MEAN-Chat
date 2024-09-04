@@ -1,11 +1,10 @@
-// channel.controller.js
 
 /**
  * @description Get all channels for a specific group
  * @route GET /api/channels/:groupId
  * @access Public
  */
-exports.getAllChannels = (req, res) => {
+exports.getChannels = (req, res) => {
     // Logic to retrieve all channels for a specific group
   };
   
