@@ -1,9 +1,9 @@
 class Channel {
-    constructor(id, name, groupId, members = []) {
+    constructor(id, name, groupId, description) {
       this.id = id;
       this.name = name;
       this.groupId = groupId;
-      this.members = members;
+      this.description = description;
     }
   }
   
