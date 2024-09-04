@@ -77,46 +77,179 @@ The Git repository is organized into two main directories:
 
 ### Route Definitions
 
-#### **`user.route.js`**
-- **`GET /users`**: Retrieve all users.
-- **`POST /users`**: Create a new user.
-- **`GET /users/:id`**: Retrieve a user by ID.
-- **`POST /users/:id/update`**: Update a user by ID.
-- **`DELETE /users/:id`**: Delete a user by ID.
-- **`POST /users/:id/groups/:groupId`**: Add a group to a user.
-- **`POST /users/:id/groups/:groupId/remove`**: Remove a group from a user.
-- **`POST /users/:id/interests/:groupId`**: Add interest to a user.
-- **`POST /users/:id/interests/:groupId/remove`**: Remove interest from a user.
-- **`POST /users/:id/promote`**: Promote a user.
-- **`POST /users/:id/demote`**: Demote a user.
+#### `user.route.js`
 
-#### **`group.route.js`**
-- **`GET /groups`**: Retrieve all groups.
-- **`POST /groups`**: Create a new group.
-- **`GET /groups/:id`**: Retrieve a group by ID.
-- **`POST /groups/:id/update`**: Update a group by ID.
-- **`DELETE /groups/:id`**: Delete a group by ID.
-- **`POST /groups/:id/channels`**: Add a channel to a group.
-- **`DELETE /groups/:id/channels/:channelId`**: Remove a channel from a group.
-- **`POST /groups/:id/users/:userId`**: Add a user to a group.
-- **`DELETE /groups/:id/users/:userId`**: Remove a user from a group.
-- **`POST /groups/:id/users/:userId/promote`**: Promote a user to admin.
-- **`POST /groups/:id/users/:userId/demote`**: Demote an admin.
-- **`POST /groups/:id/users/:userId/interested`**: Register a user as interested in a group.
-- **`POST /groups/:id/users/:userId/approve`**: Approve an interested user.
-- **`DELETE /groups/:id/users/:userId/deny`**: Deny an interested user.
-- **`POST /groups/:id/users/:userId/ban`**: Ban a user from a group.
+- **`GET /users`**
+  - **Parameters:** None
+  - **Return Value:** A JSON array of User objects
+  - **Description:** Retrieves a list of all users in the system.
 
-#### **`channel.route.js`**
-- **`GET /channels/:groupId`**: Retrieve all channels for a specific group.
-- **`POST /channels`**: Create a new channel.
-- **`PUT /channels/:groupId/:id`**: Update an existing channel.
-- **`DELETE /channels/:groupId/:id`**: Delete a channel by ID.
-- **`GET /channel/:groupId/:id`**: Find a channel by ID.
+- **`POST /users`**
+  - **Parameters:** A JSON object containing `password`, `username`, and `email`
+  - **Return Value:** A JSON object of the newly created User
+  - **Description:** Creates a new user with the provided `password`, `username`, and `email`.
 
-#### **`auth.route.js`**
-- **`POST /login`**: Handle login requests.
-- **`POST /register`**: Handle registration requests.
+- **`GET /users/:id`**
+  - **Parameters:** `id` (the unique identifier of the user)
+  - **Return Value:** A JSON object of the User with the specified ID
+  - **Description:** Retrieves a user by their unique ID.
+
+- **`POST /users/:id/update`**
+  - **Parameters:** `id` (the unique identifier of the user) and a JSON object with updated user details (e.g., `password`, `username`, `email`)
+  - **Return Value:** A JSON object of the updated User
+  - **Description:** Updates the details of a user with the specified ID.
+
+- **`DELETE /users/:id`**
+  - **Parameters:** `id` (the unique identifier of the user)
+  - **Return Value:** A confirmation message (e.g., "User deleted")
+  - **Description:** Deletes a user by their unique ID.
+
+- **`POST /users/:id/groups/:groupId`**
+  - **Parameters:** `id` (user ID) and `groupId` (ID of the group to add)
+  - **Return Value:** A JSON object of the updated User
+  - **Description:** Adds a specified group to the user's list of groups.
+
+- **`POST /users/:id/groups/:groupId/remove`**
+  - **Parameters:** `id` (user ID) and `groupId` (ID of the group to remove)
+  - **Return Value:** A JSON object of the updated User
+  - **Description:** Removes a specified group from the user's list of groups.
+
+- **`POST /users/:id/interests/:groupId`**
+  - **Parameters:** `id` (user ID) and `groupId` (ID of the group of interest)
+  - **Return Value:** A JSON object of the updated User
+  - **Description:** Adds a specified group as an interest for the user.
+
+- **`POST /users/:id/interests/:groupId/remove`**
+  - **Parameters:** `id` (user ID) and `groupId` (ID of the group to remove from interests)
+  - **Return Value:** A JSON object of the updated User
+  - **Description:** Removes a specified group from the user's list of interests.
+
+- **`POST /users/:id/promote`**
+  - **Parameters:** `id` (user ID)
+  - **Return Value:** A JSON object of the updated User with promoted status
+  - **Description:** Promotes the specified user to a higher role.
+
+- **`POST /users/:id/demote`**
+  - **Parameters:** `id` (user ID)
+  - **Return Value:** A JSON object of the updated User with demoted status
+  - **Description:** Demotes the specified user to a lower role.
+
+#### `group.route.js`
+
+- **`GET /groups`**
+  - **Parameters:** None
+  - **Return Value:** A JSON array of Group objects
+  - **Description:** Retrieves a list of all groups in the system.
+
+- **`POST /groups`**
+  - **Parameters:** A JSON object containing group details (e.g., `name`, `description`)
+  - **Return Value:** A JSON object of the newly created Group
+  - **Description:** Creates a new group with the provided details.
+
+- **`GET /groups/:id`**
+  - **Parameters:** `id` (the unique identifier of the group)
+  - **Return Value:** A JSON object of the Group with the specified ID
+  - **Description:** Retrieves a group by its unique ID.
+
+- **`POST /groups/:id/update`**
+  - **Parameters:** `id` (the unique identifier of the group) and a JSON object with updated group details (e.g., `name`, `description`)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Updates the details of a group with the specified ID.
+
+- **`DELETE /groups/:id`**
+  - **Parameters:** `id` (the unique identifier of the group)
+  - **Return Value:** A confirmation message (e.g., "Group deleted")
+  - **Description:** Deletes a group by its unique ID.
+
+- **`POST /groups/:id/channels`**
+  - **Parameters:** `id` (group ID) and a JSON object with channel details (e.g., `name`, `description`)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Adds a new channel to the specified group.
+
+- **`DELETE /groups/:id/channels/:channelId`**
+  - **Parameters:** `id` (group ID) and `channelId` (ID of the channel to remove)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Removes a specified channel from the group.
+
+- **`POST /groups/:id/users/:userId`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the user to add)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Adds a user to the specified group.
+
+- **`DELETE /groups/:id/users/:userId`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the user to remove)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Removes a user from the specified group.
+
+- **`POST /groups/:id/users/:userId/promote`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the user to promote)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Promotes a user to admin status within the group.
+
+- **`POST /groups/:id/users/:userId/demote`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the user to demote)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Demotes an admin to a regular user within the group.
+
+- **`POST /groups/:id/users/:userId/interested`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the user)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Registers a user as interested in the group.
+
+- **`POST /groups/:id/users/:userId/approve`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the interested user)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Approves an interested user to join the group.
+
+- **`DELETE /groups/:id/users/:userId/deny`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the interested user)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Denies an interested user from joining the group.
+
+- **`POST /groups/:id/users/:userId/ban`**
+  - **Parameters:** `id` (group ID) and `userId` (ID of the user to ban)
+  - **Return Value:** A JSON object of the updated Group
+  - **Description:** Bans a user from the group.
+
+#### `channel.route.js`
+
+- **`GET /channels/:groupId`**
+  - **Parameters:** `groupId` (the unique identifier of the group)
+  - **Return Value:** A JSON array of Channel objects for the specified group
+  - **Description:** Retrieves all channels associated with a specific group.
+
+- **`POST /channels`**
+  - **Parameters:** A JSON object containing channel details (e.g., `name`, `description`, `groupId`)
+  - **Return Value:** A JSON object of the newly created Channel
+  - **Description:** Creates a new channel with the provided details.
+
+- **`PUT /channels/:groupId/:id`**
+  - **Parameters:** `groupId` (group ID) and `id` (channel ID), along with a JSON object with updated channel details (e.g., `name`, `description`)
+  - **Return Value:** A JSON object of the updated Channel
+  - **Description:** Updates an existing channel within a specific group.
+
+- **`DELETE /channels/:groupId/:id`**
+  - **Parameters:** `groupId` (group ID) and `id` (channel ID)
+  - **Return Value:** A confirmation message (e.g., "Channel deleted")
+  - **Description:** Deletes a channel by its ID within a specific group.
+
+- **`GET /channel/:groupId/:id`**
+  - **Parameters:** `groupId` (group ID) and `id` (channel ID)
+  - **Return Value:** A JSON object of the Channel with the specified ID
+  - **Description:** Finds and retrieves a channel by its ID within a specific group.
+
+#### `auth.route.js`
+
+- **`POST /login`**
+  - **Parameters:** A JSON object containing `username` and `password`
+  - **Return Value:** A JSON object with authentication details (e.g., `token`, `user`)
+  - **Description:** Handles login requests and returns authentication details.
+
+- **`POST /register`**
+  - **Parameters:** A JSON object containing `username`, `password`, and `email`
+  - **Return Value:** A JSON object of the newly registered User
+  - **Description:** Handles registration requests and creates a new user.
+
 
 ### Modules and Functions
 - **Modules**: Utilizes Express for routing, body-parser for parsing requests, and other standard utilities.
