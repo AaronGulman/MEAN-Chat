@@ -1,4 +1,4 @@
-# Project Documentation
+# MEAN Chat Documentation
 
 ## Git Repository Organization and Version Control Approach
 
