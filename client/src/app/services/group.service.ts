@@ -226,6 +226,7 @@ export class GroupService {
         group.interested.splice(userIndex, 1);
         this.updateGroup(groupId, { interested: group.interested });
         this.userService.removeGroupFromUser(userId, groupId);
+        this.userService.removeInterestedGroupFromUser(userId,group.id);
       }
     }
     return null;
