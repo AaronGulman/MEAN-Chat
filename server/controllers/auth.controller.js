@@ -4,9 +4,8 @@ const users = [
     new User(Date.now(), 'super', 'super@example.com', '123', ['superadmin'], [])
   ];
   
-  const login = (req, res) => {
+  const login = (req, res, db) => {
     const { username, password } = req.body;
-    console.log({ username, password });
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
       res.status(200).json({ username: user.username, valid: true });
@@ -15,7 +14,7 @@ const users = [
     }
   };
   
-  const register = (req, res) => {
+  const register = (req, res, db) => {
     // 
   
     // if (users.find(u => u.username === username)) {
@@ -26,7 +25,6 @@ const users = [
     // users.push(newUser);
     // res.status(201).json(newUser);
     const { username, email, password } = req.body;
-    console.log({ username, email, password });
     res.status(201).json({ valid: true});
   };
   

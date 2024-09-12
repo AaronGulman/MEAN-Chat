@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller.js');
 
-// Define routes and associate them with controller functions
-router.post('/login', authController.login);
-router.post('/register', authController.register);
-
-module.exports = router;
+module.exports = (db) => {
+  router.post('/login', (req, res) => authController.login(req, res, db));
+  router.post('/register', (req, res) => authController.register(req, res, db));
+  return router;
+};
