@@ -3,13 +3,13 @@
  * @route GET /api/users
  * @access Public
  */
-exports.getUsers = (req, res, db) => {
-  db.collection('Users').find({}).toArray((err, users) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to retrieve users' });
-    }
+exports.getUsers = async (req, res, db) => {
+  try {
+    const users = await db.collection('Users').find({}).toArray();
     res.status(200).json(users);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve users', error: err.message });
+  }
 };
 
 /**
@@ -17,11 +17,11 @@ exports.getUsers = (req, res, db) => {
  * @route POST /api/users
  * @access Public
  */
-exports.createUser = (req, res, db) => {
-  const { id, username, email, password, roles, groups, interested } = req.body;
+exports.createUser = async (req, res, db) => {
+  const { username, email, password, roles, groups, interested } = req.body;
 
   const newUser = {
-    id,
+    id : new Date(),
     username,
     email,
     password,
@@ -30,12 +30,12 @@ exports.createUser = (req, res, db) => {
     interested: interested || []
   };
 
-  db.collection('Users').insertOne(newUser, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to create user' });
-    }
+  try {
+    const result = await db.collection('Users').insertOne(newUser);
     res.status(200).json(result.ops[0]);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to create user', error: err.message });
+  }
 };
 
 /**
@@ -43,18 +43,18 @@ exports.createUser = (req, res, db) => {
  * @route GET /api/users/:id
  * @access Public
  */
-exports.getUserById = (req, res, db) => {
+exports.getUserById = async (req, res, db) => {
   const userId = req.params.id;
 
-  db.collection('Users').findOne({ id: userId }, (err, user) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to retrieve user' });
-    }
+  try {
+    const user = await db.collection('Users').findOne({ id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     res.status(200).json(user);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve user', error: err.message });
+  }
 };
 
 /**
@@ -62,18 +62,18 @@ exports.getUserById = (req, res, db) => {
  * @route GET /api/users/username/:username
  * @access Public
  */
-exports.getUserByUsername = (req, res, db) => {
+exports.getUserByUsername = async (req, res, db) => {
   const username = req.params.username;
 
-  db.collection('Users').findOne({ username }, (err, user) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to retrieve user' });
-    }
+  try {
+    const user = await db.collection('Users').findOne({ username });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     res.status(200).json(user);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve user', error: err.message });
+  }
 };
 
 /**
@@ -81,19 +81,19 @@ exports.getUserByUsername = (req, res, db) => {
  * @route POST /api/users/:id/update
  * @access Public
  */
-exports.updateUser = (req, res, db) => {
+exports.updateUser = async (req, res, db) => {
   const userId = req.params.id;
   const updateData = req.body;
 
-  db.collection('Users').updateOne({ id: userId }, { $set: updateData }, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to update user' });
-    }
+  try {
+    const result = await db.collection('Users').updateOne({ id: userId }, { $set: updateData });
     if (result.matchedCount === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
     res.status(200).json({ message: 'User updated successfully' });
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update user', error: err.message });
+  }
 };
 
 /**
@@ -101,18 +101,44 @@ exports.updateUser = (req, res, db) => {
  * @route DELETE /api/users/:id
  * @access Public
  */
-exports.deleteUser = (req, res, db) => {
+exports.deleteUser = async (req, res, db) => {
   const userId = req.params.id;
 
-  db.collection('Users').deleteOne({ id: userId }, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to delete user' });
+  try {
+    // Find the user by ID
+    const user = await db.collection('Users').findOne({ id: userId });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    // Iterate through the user's groups and remove the user from all relevant fields
+    if (user.groups && user.groups.length > 0) {
+      const updateGroups = await db.collection('Groups').updateMany(
+        { id: { $in: user.groups } }, // Find all groups the user is a part of
+        {
+          $pull: {
+            members: userId,
+            admins: userId,
+            banned: userId,
+            interested: userId
+          }
+        }
+      );
+    }
+
+    // Proceed to delete the user after removing them from all group fields
+    const result = await db.collection('Users').deleteOne({ id: userId });
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.status(200).json({ message: 'User deleted successfully' });
-  });
+
+    // Return success message, indicating that the user was deleted and groups updated
+    res.status(200).json({
+      message: 'User deleted successfully and removed from all relevant groups'
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete user', error: err.message });
+  }
 };
 
 
@@ -121,23 +147,19 @@ exports.deleteUser = (req, res, db) => {
  * @route POST /api/users/:id/groups/:groupId
  * @access Public
  */
-exports.addGroupToUser = (req, res, db) => {
+exports.addGroupToUser = async (req, res, db) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
 
-  db.collection('Users').updateOne(
-    { id: userId },
-    { $addToSet: { groups: groupId } }, 
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to add group to user' });
-      }
-      if (result.matchedCount === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      res.status(200).json({ message: `Group ${groupId} added to user ${userId}` });
+  try {
+    const result = await db.collection('Users').updateOne({ id: userId }, { $addToSet: { groups: groupId } });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  );
+    res.status(200).json({ message: `Group ${groupId} added to user ${userId}` });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to add group to user', error: err.message });
+  }
 };
 
 /**
@@ -145,23 +167,19 @@ exports.addGroupToUser = (req, res, db) => {
  * @route POST /api/users/:id/groups/:groupId/remove
  * @access Public
  */
-exports.removeGroupFromUser = (req, res, db) => {
+exports.removeGroupFromUser = async (req, res, db) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
 
-  db.collection('Users').updateOne(
-    { id: userId },
-    { $pull: { groups: groupId } }, 
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to remove group from user' });
-      }
-      if (result.matchedCount === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      res.status(200).json({ message: `Group ${groupId} removed from user ${userId}` });
+  try {
+    const result = await db.collection('Users').updateOne({ id: userId }, { $pull: { groups: groupId } });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  );
+    res.status(200).json({ message: `Group ${groupId} removed from user ${userId}` });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to remove group from user', error: err.message });
+  }
 };
 
 /**
@@ -169,23 +187,18 @@ exports.removeGroupFromUser = (req, res, db) => {
  * @route POST /api/users/:id/interests/:groupId
  * @access Public
  */
-exports.addInterestToUser = (req, res, db) => {
+exports.addInterestToUser = async (req, res, db) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
-
-  db.collection('Users').updateOne(
-    { id: userId },
-    { $addToSet: { interested: groupId } },
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to add interest to user' });
-      }
-      if (result.matchedCount === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      res.status(200).json({ message: `Interest ${groupId} added to user ${userId}` });
+  try {
+    const result = await db.collection('Users').updateOne({ id: userId }, { $addToSet: { interested: groupId } });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  );
+    res.status(200).json({ message: `Interest ${groupId} added to user ${userId}` });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to add interest to user', error: err.message });
+  }
 };
 
 /**
@@ -193,69 +206,47 @@ exports.addInterestToUser = (req, res, db) => {
  * @route POST /api/users/:id/interests/:groupId/remove
  * @access Public
  */
-exports.removeInterestFromUser = (req, res, db) => {
+exports.removeInterestFromUser = async (req, res, db) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
 
-  db.collection('Users').updateOne(
-    { id: userId },
-    { $pull: { interested: groupId } },
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to remove interest from user' });
-      }
-      if (result.matchedCount === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      res.status(200).json({ message: `Interest ${groupId} removed from user ${userId}` });
+  try {
+    const result = await db.collection('Users').updateOne({ id: userId }, { $pull: { interested: groupId } });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  );
+    res.status(200).json({ message: `Interest ${groupId} removed from user ${userId}` });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to remove interest from user', error: err.message });
+  }
 };
-
 
 /**
  * @description Promote a user
  * @route POST /api/users/:id/promote
  * @access Public
  */
-exports.promoteUser = (req, res, db) => {
+exports.promoteUser = async (req, res, db) => {
   const userId = req.params.id;
 
-  db.collection('Users').findOne({ id: userId }, (err, user) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to retrieve user' });
-    }
+  try {
+    const user = await db.collection('Users').findOne({ id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check the user's current role and promote them
     if (user.roles.includes('user')) {
-      db.collection('Users').updateOne(
-        { id: userId },
-        { $set: { roles: ['admin'] } },
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({ message: 'Failed to promote user' });
-          }
-          res.status(200).json({ message: `User ${userId} promoted to admin` });
-        }
-      );
+      await db.collection('Users').updateOne({ id: userId }, { $set: { roles: ['admin'] } });
+      res.status(200).json({ message: `User ${userId} promoted to admin` });
     } else if (user.roles.includes('admin')) {
-      db.collection('Users').updateOne(
-        { id: userId },
-        { $set: { roles: ['superadmin'] } },
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({ message: 'Failed to promote user' });
-          }
-          res.status(200).json({ message: `User ${userId} promoted to superadmin` });
-        }
-      );
+      await db.collection('Users').updateOne({ id: userId }, { $set: { roles: ['superadmin'] } });
+      res.status(200).json({ message: `User ${userId} promoted to superadmin` });
     } else {
       res.status(400).json({ message: `User ${userId} cannot be promoted further` });
     }
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to promote user', error: err.message });
+  }
 };
 
 /**
@@ -263,34 +254,24 @@ exports.promoteUser = (req, res, db) => {
  * @route POST /api/users/:id/demote
  * @access Public
  */
-exports.demoteUser = (req, res, db) => {
+exports.demoteUser = async (req, res, db) => {
   const userId = req.params.id;
 
-  db.collection('Users').findOne({ id: userId }, (err, user) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to retrieve user' });
-    }
+  try {
+    const user = await db.collection('Users').findOne({ id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check the user's current role and demote them
     if (user.roles.includes('superadmin')) {
-      // Superadmin cannot be demoted
       res.status(400).json({ message: `User ${userId} is a superadmin and cannot be demoted` });
     } else if (user.roles.includes('admin')) {
-      db.collection('Users').updateOne(
-        { id: userId },
-        { $set: { roles: ['user'] } },
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({ message: 'Failed to demote user' });
-          }
-          res.status(200).json({ message: `User ${userId} demoted to user` });
-        }
-      );
+      await db.collection('Users').updateOne({ id: userId }, { $set: { roles: ['user'] } });
+      res.status(200).json({ message: `User ${userId} demoted to user` });
     } else {
       res.status(400).json({ message: `User ${userId} cannot be demoted further` });
     }
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to demote user', error: err.message });
+  }
 };

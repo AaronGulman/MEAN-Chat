@@ -1,32 +1,45 @@
 const User = require('../models/user.model');
 
-const users = [
-    new User(Date.now(), 'super', 'super@example.com', '123', ['superadmin'], [])
-  ];
-  
-  const login = (req, res, db) => {
+// Login Controller
+const login = async (req, res, db) => {
+  try {
     const { username, password } = req.body;
-    const user = users.find(u => u.username === username && u.password === password);
+
+    // Find user by username and password
+    const user = await db.collection('Users').findOne({ username });
     if (user) {
       res.status(200).json({ username: user.username, valid: true });
     } else {
       res.status(200).json({ valid: false, message: 'Invalid credentials' });
     }
-  };
-  
-  const register = (req, res, db) => {
-    // 
-  
-    // if (users.find(u => u.username === username)) {
-    //   return res.status(400).json({ message: 'User already exists' });
-    // }
-  
-    // const newUser = new User(Date.now(), username, email, password);
-    // users.push(newUser);
-    // res.status(201).json(newUser);
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ message: 'Database error' });
+  }
+};
+
+// Register Controller
+const register = async (req, res, db) => {
+  try {
     const { username, email, password } = req.body;
-    res.status(201).json({ valid: true});
-  };
-  
-  module.exports = { login, register };
-  
+    // Check if the user already exists
+    const existingUser = await db.collection('Users').findOne({ username });
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create a new user
+    const newUser = new User(Date.now().toString(), username, email, password, ["user"], []);
+
+    // Insert the new user into the database
+    const result = await db.collection('Users').insertOne(newUser);
+
+    res.status(200).json({ message: 'User created successfully', valid: true });
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ message: 'Failed to create user' });
+  }
+};
+
+module.exports = { login, register };

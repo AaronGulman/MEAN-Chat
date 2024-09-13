@@ -6,12 +6,15 @@ const userController = require('../controllers/user.controller.js');
 
 module.exports = (db) => {
     // Route to get all users
-    router.get('/users', (req, res) => userController.getAllUsers(req, res, db));
+    router.get('/users', (req, res) => userController.getUsers(req, res, db));
 
     // Route to create a new user
     router.post('/users', (req, res) => userController.createUser(req, res, db));
 
     // Route to get a user by ID
+    router.get('/users/username/:username', (req, res) => userController.getUserByUsername(req, res, db));
+
+    // Route to get a user by Username
     router.get('/users/:id', (req, res) => userController.getUserById(req, res, db));
 
     // Route to update a user by ID
