@@ -10,7 +10,7 @@ export class Group {
   members: User[];
   channels: Channel[];
   interested: User[];
-  banned: string[];
+  banned: User[];
 
   constructor(
     id: string,
@@ -20,7 +20,7 @@ export class Group {
     members: User[] = [],
     channels: Channel[] = [],
     interested: User[] = [],
-    banned: string[] = [],
+    banned: User[] = [],
   ) {
     this.id = id;
     this.name = name;
