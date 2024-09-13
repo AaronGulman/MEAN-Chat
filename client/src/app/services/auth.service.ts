@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError, of } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { UserService } from './user.service';
 
@@ -12,26 +12,20 @@ const httpOptions = {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api/';
+  private apiUrl = 'http://localhost:3000/api';
 
   constructor(private http: HttpClient, private userService: UserService) {}
 
+  // Use backend API for login
   login(username: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, { username, password }, httpOptions).pipe(
       map(response => {
         if (response.valid) {
+          // Save the logged-in user to sessionStorage
           this.userService.setLoggedInUser(username);
           return response;
         } else {
-          // Use UserService to check local storage
-          const localUser = this.userService.getUserByUsername(username);
-          if (localUser && localUser.password === password) {
-            // Simulate a successful login response and save to sessionStorage
-            this.userService.setLoggedInUser(username);
-            return { valid: true };
-          } else {
-            return { valid: false };
-          }
+          return { valid: false, message: 'Invalid credentials' };
         }
       }),
       catchError(error => {
@@ -39,17 +33,16 @@ export class AuthService {
       })
     );
   }
-  
 
+  // Use backend API for registration
   register(username: string, email: string, password: string): Observable<any> {
     const registerData = { username, email, password };
     return this.http.post<any>(`${this.apiUrl}/register`, registerData, httpOptions).pipe(
       map(response => {
         if (response.valid) {
-          // Use UserService to create a user if registration is successful
-          const newUser = this.userService.createUser(username, email, password);
-          console.log("New User Created: ",newUser);
-          return { valid: true, ...newUser };
+          // Optionally, you could auto-login the user after successful registration
+          //this.userService.setLoggedInUser(username);
+          return response;
         } else {
           return { valid: false };
         }
@@ -59,7 +52,6 @@ export class AuthService {
       })
     );
   }
-
 
   getLoggedInUser(): string {
     const username = sessionStorage.getItem('loggedInUser');

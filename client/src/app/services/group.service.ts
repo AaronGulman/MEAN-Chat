@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { Group } from '../models/group.model';
 import { Channel } from '../models/channel.model';
 import { User } from '../models/user.model';
@@ -8,241 +10,83 @@ import { UserService } from './user.service';
   providedIn: 'root',
 })
 export class GroupService {
-  private localStorageKey = 'groups';
+  private apiUrl = 'http://localhost:3000/api/groups'; // Update with your backend URL
 
-  constructor(private userService: UserService) {}
+  constructor(private http: HttpClient, private userService: UserService) {}
 
-  // Retrieve all groups from local storage
-  public getGroups(): Group[] {
-    const groups = localStorage.getItem(this.localStorageKey);
-    return groups ? JSON.parse(groups) : [];
+  // Retrieve all groups from the backend
+  public getGroups(): Observable<Group[]> {
+    return this.http.get<Group[]>(this.apiUrl);
   }
 
-  // Save groups to local storage
-  private saveGroups(groups: Group[]): void {
-    localStorage.setItem(this.localStorageKey, JSON.stringify(groups));
+  // Retrieve a group by ID
+  public getGroupById(groupId: string): Observable<Group> {
+    return this.http.get<Group>(`${this.apiUrl}/${groupId}`);
   }
 
   // Create a new group
-  createGroup(name: string, description: string = "", admin: User[] = [], channels: Channel[] = []): Group {
-    const id = Date.now().toString();
-    const newGroup = new Group(id, name, description, admin, [], channels, []);
-    const groups = this.getGroups();
-    groups.push(newGroup);
-    this.saveGroups(groups);
-    return newGroup;
+  public createGroup(name: string, description: string = '', admin: User): Observable<any> {
+    const newGroup = { name, description, admin};
+    return this.http.post<Group>(this.apiUrl, newGroup);
   }
 
-  // Update an existing group
-  updateGroup(groupId: string, updatedData: Partial<Group>): Group | null {
-    const groups = this.getGroups();
-    const groupIndex = groups.findIndex(g => g.id === groupId);
-
-    if (groupIndex !== -1) {
-      const group = groups[groupIndex];
-      const updatedGroup = { ...group, ...updatedData };
-      groups[groupIndex] = updatedGroup;
-      this.saveGroups(groups);
-      return updatedGroup;
-    }
-    return null;
+  // Update a group by ID
+  public updateGroup(groupId: string, updatedData: Partial<Group>): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/update`, updatedData);
   }
 
   // Delete a group by ID
-  deleteGroup(groupId: string): boolean {
-    const groups = this.getGroups();
-    const updatedGroups = groups.filter(g => g.id !== groupId);
-    
-    if (groups.length !== updatedGroups.length) {
-      this.saveGroups(updatedGroups);
-      this.removeGroupFromUsers(groupId);
-      return true;
-    }
-    return false;
-  }
-
-  // Find a group by ID
-  getGroupById(groupId: string): Group | null {
-    const groups = this.getGroups();
-    return groups.find(group => group.id === groupId) || null;
+  public deleteGroup(groupId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${groupId}`);
   }
 
   // Add a channel to a group
-  addChannelToGroup(groupId: string, channel: Channel): Group | null {
-    const group = this.getGroupById(groupId);
-    if (group) {
-      if (!group.channels) {
-        group.channels = [];
-      }
-      group.channels.push(channel);
-      return this.updateGroup(groupId, { channels: group.channels });
-    }
-    return null;
+  public addChannelToGroup(groupId: string, channelId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/channels`, { channelId });
   }
 
   // Remove a channel from a group
-  removeChannelFromGroup(groupId: string, channelId: string): Group | null {
-    const group = this.getGroupById(groupId);
-    if (group) {
-      if (!group.channels) {
-        group.channels = [];
-      }
-      group.channels = group.channels.filter(channel => channel.id !== channelId);
-      return this.updateGroup(groupId, { channels: group.channels });
-    }
-    return null;
+  public removeChannelFromGroup(groupId: string, channelId: string): Observable<Group> {
+    return this.http.delete<Group>(`${this.apiUrl}/${groupId}/channels/${channelId}`);
   }
 
   // Add a user to a group
-  addUserToGroup(groupId: string, userId: string): Group | null {
-    const group = this.getGroupById(groupId);
-    const user = this.userService.getUserById(userId);
-
-    if (group && user) {
-      if (!group.admins.some(admin => admin.id === userId)) {
-        group.admins.push(user);
-        this.updateGroup(groupId, { admins: group.admins });
-      }
-
-      this.userService.addGroupToUser(userId, group.id);
-      return group;
-    }
-    return null;
+  public addUserToGroup(groupId: string, userId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/users/${userId}`, {});
   }
 
   // Remove a user from a group
-  removeUserFromGroup(groupId: string, userId: string): boolean {
-    const group = this.getGroupById(groupId);
-    const user = this.userService.getUserById(userId);
-
-    if (group && user) {
-      group.members = group.members.filter(member => member.id !== userId);
-      group.admins = group.admins.filter(admin => admin.id !== userId);
-      this.updateGroup(groupId, { members: group.members, admins: group.admins });
-      this.userService.removeGroupFromUser(userId, groupId);
-      return true;
-    }
-    return false;
+  public removeUserFromGroup(groupId: string, userId: string): Observable<Group> {
+    return this.http.delete<Group>(`${this.apiUrl}/${groupId}/users/${userId}`);
   }
 
   // Promote a user to admin
-  promoteToAdmin(groupId: string, userId: string) {
-    const group = this.getGroupById(groupId);
-    const user = this.userService.getUserById(userId);
-  
-    if (group && user && !group.admins.some(admin => admin.id === userId)) {
-      group.admins.push(user);
-      group.members = group.members.filter(member => member.id !== userId);
-      this.updateGroup(groupId, { admins: group.admins, members: group.members });
-    }
+  public promoteToAdmin(groupId: string, userId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/users/${userId}/promote`, {});
   }
-  
-  
 
   // Demote an admin from a group
-  demoteAdmin(groupId: string, userId: string) {
-    const group = this.getGroupById(groupId);
-    if (group) {
-      group.admins = group.admins.filter(admin => admin.id !== userId);
-      const user = this.userService.getUserById(userId);
-      if (user) {
-        group.members.push(user);
-      }
-      this.updateGroup(groupId, { admins: group.admins, members: group.members });
-    }
-  }
-  
-
-  // Remove group from all users
-  private removeGroupFromUsers(groupId: string): void {
-    const users = this.userService.getUsers();
-    users.forEach(user => {
-      user.groups = user.groups.filter(group => group !== groupId);
-      this.userService.updateUser(user.id, { groups: user.groups });
-    });
+  public demoteAdmin(groupId: string, userId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/users/${userId}/demote`, {});
   }
 
   // Register a user as interested in a group
-  registerUserToGroup(groupId: string, userId: string): boolean {
-    const groups = this.getGroups();
-    const group = groups.find(g => g.id === groupId);
-    const user = this.userService.getUserById(userId);
-  
-    if (group && user) {
-      if (!group.interested) {
-        group.interested = [];
-      }
-
-      if (!group.interested.some(u => u.id === userId)) {
-        group.interested.push(user);
-        this.saveGroups(groups);
-        return true; // Notify success
-      } else {
-        console.error('User is already interested');
-        return false;
-      }
-    } else {
-      console.error('Group or user not found');
-      return false;
-    }
+  public registerUserToGroup(groupId: string, userId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/users/${userId}/interested`, {});
   }
 
   // Approve an interested user and move them to members
-  approveInterestedUser(groupId: string, userId: string): Group | null {
-    const group = this.getGroupById(groupId);
-    const user = this.userService.getUserById(userId);
-
-    if (group && user) {
-      if (!group.interested) {
-        group.interested = [];
-      }
-      if (!group.members) {
-        group.members = [];
-      }
-
-      const userIndex = group.interested.findIndex(u => u.id === userId);
-      if (userIndex !== -1) {
-        group.interested.splice(userIndex, 1);
-        group.members.push(user);
-        this.updateGroup(groupId, { interested: group.interested, members: group.members });
-        this.userService.addGroupToUser(userId, group.id);
-        this.userService.removeInterestedGroupFromUser(userId,group.id);
-      }
-    }
-    return null;
+  public approveInterestedUser(groupId: string, userId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/users/${userId}/approve`, {});
   }
 
   // Deny an interested user and remove them from interested
-  denyInterestedUser(groupId: string, userId: string): Group | null {
-    const group = this.getGroupById(groupId);
-
-    if (group) {
-      if (!group.interested) {
-        group.interested = [];
-      }
-
-      const userIndex = group.interested.findIndex(u => u.id === userId);
-      if (userIndex !== -1) {
-        group.interested.splice(userIndex, 1);
-        this.updateGroup(groupId, { interested: group.interested });
-        this.userService.removeGroupFromUser(userId, groupId);
-        this.userService.removeInterestedGroupFromUser(userId,group.id);
-      }
-    }
-    return null;
+  public denyInterestedUser(groupId: string, userId: string): Observable<Group> {
+    return this.http.delete<Group>(`${this.apiUrl}/${groupId}/users/${userId}/deny`);
   }
 
-
-
-  banUserFromGroup(groupId: string, userId: string){
-    const group = this.getGroupById(groupId);
-    if(group){
-      if (!group.banned) {
-        group.banned = [];
-      }
-      group.banned.push(userId);
-      this.updateGroup(groupId, { banned: group.banned });
-      this.userService.removeGroupFromUser(userId, groupId);
-      }
-    }
+  // Ban a user from a group
+  public banUserFromGroup(groupId: string, userId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/users/${userId}/ban`, {});
   }
+}
