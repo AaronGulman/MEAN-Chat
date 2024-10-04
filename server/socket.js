@@ -15,9 +15,9 @@ function setupSocketHandlers(io, db) {
       socket.leave(channelId);
     });
 
-    socket.on('sendMessage', async ({ channelId, userId, message, timeStamp }) => {
+    socket.on('sendMessage', async ({ channelId, userId, message, timeStamp, uploadUrl }) => {
       console.log(chalk.magenta(`User ${userId} sending message to channel ${channelId}: ${message}`));
-      const messageData = new Message(channelId, userId, message, timeStamp);
+      const messageData = new Message(channelId, userId, message, timeStamp, uploadUrl);
 
       try {
         const messagesCollection = db.collection('Messages');

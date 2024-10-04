@@ -13,6 +13,7 @@ import { User } from '../../models/user.model';
 import { Channel } from '../../models/channel.model';
 import { Message } from '../../models/message';
 import { SocketService } from '../../services/socket.service';
+import { UploadService } from '../../services/upload.service';
 
 @Component({
   selector: 'app-channel',
@@ -30,7 +31,10 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
   currentUser: User | undefined;
   messages: Message[] = [];
   newMessage: string = "";
+  uploadFiles: File[] = [];
   @ViewChild('chatHistory') chatHistory!: ElementRef;
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
 
   constructor(
     private groupService: GroupService,
@@ -38,6 +42,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
     private authService: AuthService,
     private channelService: ChannelService,
     private socketService: SocketService,
+    private uploadService: UploadService,
     private router: Router,
     private route: ActivatedRoute,
     private renderer: Renderer2
@@ -79,6 +84,21 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
             (response) => {
               this.channel = response.channel;
               this.messages = response.messages;
+
+              // Fetch files if any messages contain upload URLs
+              this.messages.forEach(message => {
+                if (message.uploadUrl) {
+                  message.uploadUrl.forEach((url, index) => {
+                    this.uploadService.getFile(url).subscribe(
+                      (blob) => {
+                        const objectURL = URL.createObjectURL(blob);
+                        message.uploadUrl![index] = objectURL;
+                      },
+                      (error) => console.error('Error fetching file:', error)
+                    );
+                  });
+                }
+              });
             },
             (error) => console.error('Error loading channel:', error)
           );
@@ -86,8 +106,21 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
       },
       (error) => console.error('Error loading user:', error)
     );
+
     this.socketService.joinChannel(channelId);
     this.socketService.getMessage().subscribe((message) => {
+      // If the message contains file URLs, process them
+      if (message.uploadUrl) {
+        message.uploadUrl.forEach((url, index) => {
+          this.uploadService.getFile(url).subscribe(
+            (blob) => {
+              const objectURL = URL.createObjectURL(blob);
+              message.uploadUrl![index] = objectURL;
+            },
+            (error) => console.error('Error fetching file:', error)
+          );
+        });
+      }
       this.messages.push(message);
     });
   }
@@ -105,11 +138,31 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
     }
   }
 
+  onFileSelected(event: any) {
+    this.uploadFiles = Array.from(event.target.files);
+  }
 
-  sendMessage(){
-    const message = new Message(this.channelId,this.authService.getLoggedInUser(),this.newMessage,new Date());
-    this.socketService.sendMessage(message);
-    this.newMessage = '';
+  sendMessage() {
+    if (this.uploadFiles.length > 0) {
+      this.uploadService.uploadFiles(this.uploadFiles).subscribe(
+        (response) => {
+          const uploadedUrls = response.data.map((file: any) => file.filename);
+          const message = new Message(this.channelId, this.authService.getLoggedInUser(), this.newMessage, new Date(), uploadedUrls);
+          this.socketService.sendMessage(message);
+          this.newMessage = '';
+          this.uploadFiles = [];
+          this.fileInput.nativeElement.value = '';
+        },
+        (error) => {
+          console.error('File upload failed', error);
+        }
+      );
+    } else {
+      const message = new Message(this.channelId, this.authService.getLoggedInUser(), this.newMessage, new Date());
+      this.socketService.sendMessage(message);
+      this.newMessage = '';
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   selectNavItem(navItem: string) {
@@ -156,7 +209,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
       (updatedChannel) => {
         this.channel = updatedChannel;
         alert('Channel details updated');
-        this.loadChannel(this.group.id,this.channelId);
+        this.loadChannel(this.group.id, this.channelId);
       },
       (error) => console.error('Failed to update channel:', error)
     );

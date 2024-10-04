@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import io from 'socket.io-client';
 import { Message } from '../models/message';
+import { UploadService } from './upload.service';
 
 const SERVER_URL = 'http://localhost:3000';
 
@@ -11,7 +12,7 @@ const SERVER_URL = 'http://localhost:3000';
 export class SocketService {
   private socket: any;
 
-  constructor() { }
+  constructor(private uploadService: UploadService) { }
 
   // Initialize socket connection
   initSocket() {
@@ -40,9 +41,9 @@ export class SocketService {
       this.initSocket();
       this.joinChannel(message.channelId);
     }
-    const { channelId, userId, message: messageData } = message;
+    const { channelId, userId, message: messageData, uploadUrl } = message;
     const timeStamp = Date.now();
-    this.socket.emit('sendMessage', { channelId, userId, message: messageData, timeStamp });
+    this.socket.emit('sendMessage', { channelId, userId, message: messageData, timeStamp, uploadUrl });
   }
 
   // Listen for messages from the server

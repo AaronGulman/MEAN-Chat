@@ -4,7 +4,8 @@ const cors = require('cors');
 const { MongoClient, Timestamp } = require('mongodb');
 const http = require('http');
 const socketIo = require('socket.io');
-const setupSocketHandlers = require('./socketHandlers');
+const setupSocketHandlers = require('./socket.js');
+const uploadRoutes = require('./upload');
 
 const authRoutes = require('./routes/auth.routes.js');
 const userRoutes = require('./routes/user.routes.js');
@@ -47,6 +48,10 @@ function loadServer(db) {
   app.use('/api', userRoutes(db));
   app.use('/api', groupRoutes(db));
   app.use('/api', channelRoutes(db));
+  app.use('/api', uploadRoutes);
+
+  // Serve uploads directory as static files
+  app.use('/uploads', express.static('uploads'));
 
   app.use((err, req, res, next) => {
     console.error(err.stack);
