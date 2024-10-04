@@ -21,16 +21,25 @@ export class SocketService {
 
   // Join a specific channel
   joinChannel(channelId: string) {
+    if (!this.socket) {
+      this.initSocket();
+    }
     this.socket.emit('joinChannel', { channelId });
   }
 
   // Leave a specific channel
   leaveChannel(channelId: string) {
-    this.socket.emit('leaveChannel', { channelId });
+    if (this.socket) {
+      this.socket.emit('leaveChannel', { channelId });
+    }
   }
 
   // Send a message to a channel
   sendMessage(message: Message) {
+    if (!this.socket) {
+      this.initSocket();
+      this.joinChannel(message.channelId);
+    }
     const { channelId, userId, message: messageData } = message;
     const timeStamp = Date.now();
     this.socket.emit('sendMessage', { channelId, userId, message: messageData, timeStamp });
@@ -39,6 +48,9 @@ export class SocketService {
   // Listen for messages from the server
   getMessage(): Observable<Message> {
     return new Observable((observer) => {
+      if (!this.socket) {
+        this.initSocket();
+      }
       this.socket.on('receiveMessage', (data: Message) => {
         observer.next(data);
       });

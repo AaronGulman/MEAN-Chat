@@ -32,6 +32,7 @@ export class DashboardComponent implements OnInit {
   selectedNav: string = 'groups';
   registrationStatus: { [groupId: string]: string } = {};
   allUsers: User[] = [];
+  socket_disconnect: any;
 
   constructor(
     private groupService: GroupService,
@@ -78,7 +79,7 @@ export class DashboardComponent implements OnInit {
           this.canCreateGroup = this.role === 'superadmin' || this.role === 'admin';
           this.loadAllUsers();
           this.loadAvailableGroups();
-          this.socketService.initSocket();
+          this.socket_disconnect = this.socketService.initSocket();
         } else {
           this.router.navigate(['/login']);
         }
@@ -252,6 +253,7 @@ export class DashboardComponent implements OnInit {
 
   logout() {
     this.authService.clearLoggedInUser();
+    this.socket_disconnect();
     this.router.navigate(['/login']);
   }
 

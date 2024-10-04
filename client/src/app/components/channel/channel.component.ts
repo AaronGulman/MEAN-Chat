@@ -82,11 +82,17 @@ export class ChannelComponent implements OnInit {
       },
       (error) => console.error('Error loading user:', error)
     );
+    this.socketService.joinChannel(channelId);
+    this.socketService.getMessage().subscribe((message) => {
+      this.messages.push(message);
+    });
   }
 
 
   sendMessage(){
-
+    const message = new Message(this.channelId,this.authService.getLoggedInUser(),this.newMessage,new Date());
+    this.socketService.sendMessage(message);
+    
   }
 
   selectNavItem(navItem: string) {
@@ -95,6 +101,7 @@ export class ChannelComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/group/' + this.group.id]);
+    this.socketService.leaveChannel(this.channelId);
   }
 
   // Check if the current user is an admin of the group
