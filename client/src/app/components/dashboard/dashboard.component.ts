@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { SocketService } from '../../services/socket.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -36,6 +37,7 @@ export class DashboardComponent implements OnInit {
     private groupService: GroupService,
     private userService: UserService,
     private authService: AuthService,
+    private socketService: SocketService,
     private router: Router
   ) {}
 
@@ -76,6 +78,7 @@ export class DashboardComponent implements OnInit {
           this.canCreateGroup = this.role === 'superadmin' || this.role === 'admin';
           this.loadAllUsers();
           this.loadAvailableGroups();
+          this.socketService.initSocket();
         } else {
           this.router.navigate(['/login']);
         }

@@ -35,8 +35,32 @@
                 </div>
 
                 <!-- Channel Main View -->
-                <div *ngIf="selectedNav === 'channel'" class="d-flex justify-content-center align-items-center vh-75">
-                    <h1>Implemented later in stage 2</h1>
+                <div *ngIf="selectedNav === 'channel'" class="d-flex flex-column vh-75">
+                    <!-- Chat History -->
+                    <div class="chat-history bg-light p-3 mb-3 flex-grow-1 overflow-auto">
+                        <div *ngFor="let message of messages" class="mb-2">
+                            <span class="fw-bold">{{ message.userId }}:</span>
+                            <span>{{ message.message }}</span>
+                            <small class="text-muted d-block">{{ message.timestamp | date:'shortTime' }}</small>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="chat-input">
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                placeholder="Type your message..." 
+                                [(ngModel)]="newMessage" 
+                                (keydown.enter)="sendMessage()">
+                            <button 
+                                class="btn btn-primary" 
+                                (click)="sendMessage()">
+                                Send
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Settings Tab -->
@@ -65,7 +89,6 @@
                             </textarea>
                         </div>
                         <div class="d-flex justify-content-between mt-3">
-                            <!-- Delete Channel button visible to admins -->
                             <button 
                                 *ngIf="isCurrentUserAdmin()" 
                                 type="button" 
@@ -73,7 +96,6 @@
                                 (click)="confirmDeleteChannel()">
                                 Delete Channel
                             </button>
-                            <!-- Update Channel button visible to admins -->
                             <button 
                                 *ngIf="isCurrentUserAdmin()" 
                                 type="submit" 

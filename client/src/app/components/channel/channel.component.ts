@@ -10,6 +10,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Group } from '../../models/group.model';
 import { User } from '../../models/user.model';
 import { Channel } from '../../models/channel.model';
+import { Message } from '../../models/message';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-channel',
@@ -25,12 +27,15 @@ export class ChannelComponent implements OnInit {
   channelId: string = '';
   group: Group = new Group('', '');
   currentUser: User | undefined;
+  messages: Message[] = [];
+  newMessage: string = "";
 
   constructor(
     private groupService: GroupService,
     private userService: UserService,
     private authService: AuthService,
     private channelService: ChannelService,
+    private socketService: SocketService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -77,6 +82,11 @@ export class ChannelComponent implements OnInit {
       },
       (error) => console.error('Error loading user:', error)
     );
+  }
+
+
+  sendMessage(){
+
   }
 
   selectNavItem(navItem: string) {
