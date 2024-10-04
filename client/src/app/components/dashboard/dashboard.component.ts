@@ -4,6 +4,7 @@ import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { SocketService } from '../../services/socket.service';
+import { UploadService } from '../../services/upload.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -33,12 +34,14 @@ export class DashboardComponent implements OnInit {
   registrationStatus: { [groupId: string]: string } = {};
   allUsers: User[] = [];
   socket_disconnect: any;
+  newAvatarFile: any;
 
   constructor(
     private groupService: GroupService,
     private userService: UserService,
     private authService: AuthService,
     private socketService: SocketService,
+    private uploadService: UploadService,
     private router: Router
   ) {}
 
@@ -54,6 +57,16 @@ export class DashboardComponent implements OnInit {
         if (user) {
           this.user = user;
           this.username = user.username;
+          if(!user.avatarPath){
+            this.user.avatarPath = "/assets/avatar.jpg";
+          }else{
+            this.uploadService.getFile(user.avatarPath).subscribe(
+              (blob) => {
+                const objectURL = URL.createObjectURL(blob);
+                this.user.avatarPath = objectURL;
+              });
+          }
+
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
   
           // Create an array of observables for the groups and interested groups
@@ -140,6 +153,18 @@ export class DashboardComponent implements OnInit {
     );
   }
 
+  onAvatarSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.newAvatarFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.user.avatarPath = e.target.result; 
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   createGroup() {
     if (!this.newGroupName.trim() || !this.newGroupDescription.trim()) {
       return;
@@ -147,17 +172,16 @@ export class DashboardComponent implements OnInit {
   
     this.groupService.createGroup(this.newGroupName, this.newGroupDescription, this.user).subscribe(
       (response) => {
-        // Access newGroup from the response object
         const newGroup = response.newGroup;
         
         if (newGroup && newGroup.id) {
           this.userService.addGroupToUser(this.user.id, newGroup.id).subscribe(
             () => {
               console.log('Group created and added to user:', newGroup.id);
-              this.groups.push(newGroup); // Add new group to local groups list
-              this.newGroupName = ''; // Reset form fields
+              this.groups.push(newGroup); 
+              this.newGroupName = '';
               this.newGroupDescription = '';
-              this.closeCreateGroupModal(); // Close modal
+              this.closeCreateGroupModal();
             },
             (error) => console.error('Error adding group to user:', error)
           );
@@ -169,6 +193,9 @@ export class DashboardComponent implements OnInit {
     );
   
   }
+
+
+  
 
   registerGroup(group: Group) {
     this.groupService.registerUserToGroup(group.id, this.user.id).subscribe(
@@ -187,11 +214,28 @@ export class DashboardComponent implements OnInit {
   }
 
   updateUser() {
-    const updatedData = {
+    const updatedData: any = {
       email: this.user.email,
       password: this.user.password
     };
-
+  
+    if (this.newAvatarFile) {
+      this.uploadService.uploadFiles([this.newAvatarFile]).subscribe(
+        (response: any) => {
+          if (response && response.data && response.data.length > 0) {
+            const uploadedUrls = response.data.map((file: any) => file.filename);
+            updatedData.avatarPath = uploadedUrls;
+          }
+          this.updateUserData(updatedData);
+        },
+        (error) => console.error('Error uploading avatar:', error)
+      );
+    } else {
+      this.updateUserData(updatedData);
+    }
+  }
+  
+  updateUserData(updatedData: any) {
     this.userService.updateUser(this.user.id, updatedData).subscribe(
       () => {
         alert('Details Updated');
@@ -200,6 +244,8 @@ export class DashboardComponent implements OnInit {
       (error) => console.error('Error updating user:', error)
     );
   }
+  
+  
 
   deleteUser(user: User) {
     if (confirm('Are you sure you want to delete this account?')) {

@@ -28,7 +28,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
   selectedNav: string = 'channel';
   channelId: string = '';
   group: Group = new Group('', '');
-  currentUser: User | undefined;
+  currentUser: User = new User('', '', '','');
   messages: Message[] = [];
   newMessage: string = "";
   uploadFiles: File[] = [];
@@ -78,6 +78,15 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
       (user) => {
         if (user) {
           this.currentUser = user;
+          if(!user.avatarPath){
+            this.currentUser.avatarPath = "/assets/avatar.jpg";
+          }else{
+            this.uploadService.getFile(user.avatarPath).subscribe(
+              (blob) => {
+                const objectURL = URL.createObjectURL(blob);
+                this.currentUser.avatarPath = objectURL;
+              });
+          }
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
 
           this.channelService.getChannelById(groupId, channelId).subscribe(
@@ -98,10 +107,22 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
                     );
                   });
                 }
+                this.userService.getUserByUsername(message.userId).subscribe((messageUser) => {
+                  if(messageUser.avatarPath){
+                    this.uploadService.getFile(messageUser.avatarPath).subscribe(
+                      (blob) => {
+                        const objectURL = URL.createObjectURL(blob);
+                        message.avatarPath = objectURL;
+                      },
+                      (error) => console.error('Error fetching message avatar:', error)
+                    );
+                  }
+                });
               });
             },
             (error) => console.error('Error loading channel:', error)
           );
+          
         }
       },
       (error) => console.error('Error loading user:', error)
@@ -109,7 +130,6 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
 
     this.socketService.joinChannel(channelId);
     this.socketService.getMessage().subscribe((message) => {
-      // If the message contains file URLs, process them
       if (message.uploadUrl) {
         message.uploadUrl.forEach((url, index) => {
           this.uploadService.getFile(url).subscribe(
@@ -121,6 +141,17 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
           );
         });
       }
+      this.userService.getUserByUsername(message.userId).subscribe((messageUser) => {
+        if(messageUser.avatarPath){
+          this.uploadService.getFile(messageUser.avatarPath).subscribe(
+            (blob) => {
+              const objectURL = URL.createObjectURL(blob);
+              message.avatarPath = objectURL;
+            },
+            (error) => console.error('Error fetching message avatar:', error)
+          );
+        }
+      });
       this.messages.push(message);
     });
   }

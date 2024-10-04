@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
-import { ChannelService } from '../../services/chat.service'; // Renamed from chat.service to channel.service
+import { ChannelService } from '../../services/chat.service'; 
+import { UploadService } from '../../services/upload.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Group } from '../../models/group.model';
 import { User } from '../../models/user.model';
@@ -28,7 +29,7 @@ export class GroupComponent implements OnInit {
   newChannelName: string = '';
   newChannelDescription: string = '';
   currentGroupRole: string = '';
-  currentUser: User | undefined;
+  currentUser: User = new User('', '', '','');
 
   constructor(
     private groupService: GroupService,
@@ -36,7 +37,8 @@ export class GroupComponent implements OnInit {
     private userService: UserService,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private uploadService: UploadService,
   ) {}
 
   ngOnInit() {
@@ -57,6 +59,15 @@ export class GroupComponent implements OnInit {
       (user) => {
         if (user) {
           this.currentUser = user;
+          if(!user.avatarPath){
+            this.currentUser.avatarPath = "/assets/avatar.jpg";
+          }else{
+            this.uploadService.getFile(user.avatarPath).subscribe(
+              (blob) => {
+                const objectURL = URL.createObjectURL(blob);
+                this.currentUser.avatarPath = objectURL;
+              });
+          }
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
   
           // Use forkJoin to fetch both the group and the channels simultaneously

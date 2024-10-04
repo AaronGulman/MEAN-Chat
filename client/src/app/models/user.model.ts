@@ -6,6 +6,7 @@ export class User {
   roles: string[];
   groups: string[];
   interested: string[];
+  avatarPath: string;
 
   constructor(
     id: string,
@@ -14,7 +15,8 @@ export class User {
     password: string,
     roles: string[] = ['user'],
     groups: string[] = [],
-    interested: string[] = []
+    interested: string[] = [],
+    avatarPath: string = '/assets/avatar.jpg'
   ) {
     this.id = id;
     this.username = username;
@@ -23,5 +25,6 @@ export class User {
     this.roles = roles;
     this.groups = groups;
     this.interested = interested;
+    this.avatarPath = avatarPath;
   }
 }

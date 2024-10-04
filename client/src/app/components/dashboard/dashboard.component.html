@@ -15,6 +15,11 @@
                     <h3 class="text-center">MEAN Chat</h3>
                     <p class="text-center">Current Role: {{role}}</p>
                     <ul class="nav flex-column">
+                        <div class="d-flex justify-content-center mt-3">
+                            <img *ngIf="user?.avatarPath" [src]="user.avatarPath" alt="User Avatar" 
+                                 class="rounded-circle border border-3 border-secondary shadow" 
+                                 style="width: 120px; height: 120px; object-fit: cover; margin-bottom: 15px;">
+                        </div>                                  
                         <li class="nav-item">
                             <a class="nav-link" [ngClass]="{'active': selectedNav === 'groups'}" (click)="selectNavItem('groups')">Groups</a>
                         </li>
@@ -119,12 +124,17 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" id="password" class="form-control" [(ngModel)]="user.password" name="password">
                         </div>
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Upload New Avatar</label>
+                            <input type="file" id="avatar" class="form-control" (change)="onAvatarSelected($event)">
+                        </div>
                         <div class="d-flex justify-content-between mt-3">
                             <button type="button" class="btn btn-danger" (click)="deleteUser(user)">Delete Account</button>
                             <button type="submit" class="btn btn-primary">Update Details</button>
                         </div>
                     </form>
                 </div>
+
 
                 <!-- Users List -->
                 <div *ngIf="selectedNav === 'users'">

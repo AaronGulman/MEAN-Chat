@@ -43,7 +43,7 @@ export class SocketService {
     }
     const { channelId, userId, message: messageData, uploadUrl } = message;
     const timeStamp = Date.now();
-    this.socket.emit('sendMessage', { channelId, userId, message: messageData, timeStamp, uploadUrl });
+    this.socket.emit('sendMessage', { channelId, userId, message: messageData, timeStamp, uploadUrl});
   }
 
   // Listen for messages from the server

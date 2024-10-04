@@ -40,6 +40,11 @@
                     <h3 class="text-center">MEAN Chat</h3>
                     <p class="text-center">Current Role: {{ role }}</p>
                     <ul class="nav flex-column">
+                        <div class="d-flex justify-content-center mt-3">
+                            <img [src]="currentUser.avatarPath || '/assets/avatar.jpg'" alt="User Avatar" 
+                                 class="rounded-circle border border-3 border-secondary shadow" 
+                                 style="width: 120px; height: 120px; object-fit: cover; margin-bottom: 15px;">
+                        </div>                        
                         <li class="nav-item">
                             <a class="nav-link" [ngClass]="{'active': selectedNav === 'channel'}" (click)="selectNavItem('channel')">Chat</a>
                         </li>
@@ -63,14 +68,27 @@
                 <div *ngIf="selectedNav === 'channel'" class="chat-container">
                     <!-- Chat History -->
                     <div class="chat-history" #chatHistory>
-                        <div *ngFor="let message of messages" class="message-container" [ngClass]="{'message-right': message.userId === currentUser?.username, 'message-left': message.userId !== currentUser?.username}">
-                            <div class="fw-bold">{{ message.userId }}:</div>
-                            <div>{{ message.message }}</div>
-                            <small class="text-muted d-block">{{ message.timestamp | date:'shortTime' }}</small>
-                            <div *ngIf="message.uploadUrl">
-                                <div *ngFor="let url of message.uploadUrl">
-                                    <img [src]="url" class="img-thumbnail" style="max-width: 150px; margin-top: 10px;" />
+                        <div *ngFor="let message of messages" class="d-flex mb-3" [ngClass]="{'justify-content-end': message.userId === currentUser.username, 'justify-content-start': message.userId !== currentUser.username}">
+                            <!-- User Avatar -->
+                            <div *ngIf="message.userId !== currentUser.username" class="me-2">
+                                <img [src]="message.avatarPath || '/assets/avatar.jpg'" alt="User Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                            </div>
+                            
+                            <!-- Message Content -->
+                            <div class="message-content" [ngClass]="{'text-end': message.userId === currentUser.username, 'text-start': message.userId !== currentUser.username}">
+                                <div class="fw-bold">{{ message.userId }}:</div>
+                                <div>{{ message.message }}</div>
+                                <small class="text-muted d-block">{{ message.timestamp | date:'shortTime' }}</small>
+                                <div *ngIf="message.uploadUrl">
+                                    <div *ngFor="let url of message.uploadUrl">
+                                        <img [src]="url" class="img-thumbnail" style="max-width: 150px; margin-top: 10px;" />
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- User Avatar for Sent Messages -->
+                            <div *ngIf="message.userId === currentUser.username" class="ms-2">
+                                <img [src]="message.avatarPath || '/assets/avatar.jpg'" alt="User Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
                             </div>
                         </div>
                     </div>
