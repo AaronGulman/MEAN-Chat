@@ -33,7 +33,7 @@ export class ChannelService {
   }
 
   // Find a channel by ID for a specific group
-  getChannelById(groupId: string, channelId: string): Observable<Channel> {
+  getChannelById(groupId: string, channelId: string): Observable<any> {
     return this.http.get<Channel>(`${this.apiUrl}/${groupId}/${channelId}`);
   }
 }

@@ -57,7 +57,11 @@ exports.getChannelById = async (req, res, db) => {
     if (!channel) {
       return res.status(404).json({ message: 'Channel not found' });
     }
-    res.status(200).json(channel);
+
+    // Retrieve messages for the channel
+    const messages = await db.collection('Messages').find({ channelId }).toArray();
+
+    res.status(200).json({ channel, messages });
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve channel', error: err.message });
   }

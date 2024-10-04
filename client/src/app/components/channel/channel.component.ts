@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +21,7 @@ import { SocketService } from '../../services/socket.service';
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.css'
 })
-export class ChannelComponent implements OnInit {
+export class ChannelComponent implements OnInit, AfterViewChecked {
   channel: Channel = new Channel('', '', '', '');
   role: string = '';
   selectedNav: string = 'channel';
@@ -29,6 +30,7 @@ export class ChannelComponent implements OnInit {
   currentUser: User | undefined;
   messages: Message[] = [];
   newMessage: string = "";
+  @ViewChild('chatHistory') chatHistory!: ElementRef;
 
   constructor(
     private groupService: GroupService,
@@ -37,7 +39,8 @@ export class ChannelComponent implements OnInit {
     private channelService: ChannelService,
     private socketService: SocketService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private renderer: Renderer2
   ) {}
 
   ngOnInit(): void {
@@ -73,8 +76,9 @@ export class ChannelComponent implements OnInit {
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
 
           this.channelService.getChannelById(groupId, channelId).subscribe(
-            (channel) => {
-              this.channel = channel;
+            (response) => {
+              this.channel = response.channel;
+              this.messages = response.messages;
             },
             (error) => console.error('Error loading channel:', error)
           );
@@ -88,11 +92,24 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  // Method to scroll to the bottom of the chat history
+  scrollToBottom(): void {
+    try {
+      this.renderer.setProperty(this.chatHistory.nativeElement, 'scrollTop', this.chatHistory.nativeElement.scrollHeight);
+    } catch (err) {
+      console.error('Error scrolling chat history', err);
+    }
+  }
+
 
   sendMessage(){
     const message = new Message(this.channelId,this.authService.getLoggedInUser(),this.newMessage,new Date());
     this.socketService.sendMessage(message);
-    
+    this.newMessage = '';
   }
 
   selectNavItem(navItem: string) {
