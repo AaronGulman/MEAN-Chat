@@ -49,8 +49,6 @@ exports.createChannel = async (req, res, db) => {
 exports.getChannelById = async (req, res, db) => {
   const channelId = req.params.channelId;
   const groupId = req.params.groupId;
-  console.log(channelId);
-  console.log(groupId);
 
   try {
     const channel = await db.collection('Channels').findOne({ id: channelId, groupId });
