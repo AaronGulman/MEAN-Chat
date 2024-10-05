@@ -87,6 +87,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
                 this.currentUser.avatarPath = objectURL;
               });
           }
+          this.socketService.joinChannel(channelId,this.currentUser);
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
 
           this.channelService.getChannelById(groupId, channelId).subscribe(
@@ -128,7 +129,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
       (error) => console.error('Error loading user:', error)
     );
 
-    this.socketService.joinChannel(channelId);
+    
     this.socketService.getMessage().subscribe((message) => {
       if (message.uploadUrl) {
         message.uploadUrl.forEach((url, index) => {
@@ -179,7 +180,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
         (response) => {
           const uploadedUrls = response.data.map((file: any) => file.filename);
           const message = new Message(this.channelId, this.authService.getLoggedInUser(), this.newMessage, new Date(), uploadedUrls);
-          this.socketService.sendMessage(message);
+          this.socketService.sendMessage(message,this.currentUser);
           this.newMessage = '';
           this.uploadFiles = [];
           this.fileInput.nativeElement.value = '';
@@ -190,7 +191,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
       );
     } else {
       const message = new Message(this.channelId, this.authService.getLoggedInUser(), this.newMessage, new Date());
-      this.socketService.sendMessage(message);
+      this.socketService.sendMessage(message,this.currentUser);
       this.newMessage = '';
       this.fileInput.nativeElement.value = '';
     }
@@ -202,7 +203,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
 
   goBack() {
     this.router.navigate(['/group/' + this.group.id]);
-    this.socketService.leaveChannel(this.channelId);
+    this.socketService.leaveChannel(this.channelId,this.currentUser);
   }
 
   // Check if the current user is an admin of the group

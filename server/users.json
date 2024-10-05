@@ -10,6 +10,23 @@
     "groups": [
       "1728127326884"
     ],
-    "interested": []
+    "interested": [],
+    "avatarPath": [
+      "426251fd9d795c929db740695c00c020.gif"
+    ]
+  },
+  {
+    "id": "1728127700836",
+    "username": "draco",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "user"
+    ],
+    "groups": [
+      "1728127326884"
+    ],
+    "interested": [],
+    "avatarPath": ""
   }
 ]
