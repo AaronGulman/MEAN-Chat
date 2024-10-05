@@ -1,8 +1,9 @@
+// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
-const https = require('https'); // For HTTPS server
+const https = require('https');
 const fs = require('fs');
 const socketIo = require('socket.io');
 const setupSocketHandlers = require('./socket.js');
@@ -42,14 +43,18 @@ const client = new MongoClient(uri);
 const dbName = 'Frameworks-Assignment';
 let db;
 
-client.connect()
-  .then(() => {
+// Function to initialize the server
+async function initializeServer() {
+  try {
+    await client.connect();
     db = client.db(dbName);
     initializeSuperUser(db);
     loadServer(db);
     loadPeerServer();
-  })
-  .catch(err => console.error('Failed to connect to MongoDB', err));
+  } catch (err) {
+    console.error('Failed to connect to MongoDB', err);
+  }
+}
 
 function loadServer(db) {
   app.use(cors());
@@ -70,15 +75,16 @@ function loadServer(db) {
     res.status(500).send('Something went wrong!');
   });
 
-  // Start the HTTPS server on port 3000
-  server.listen(PORT, () => {
-    console.log(`Secure server (Express & Socket.IO) is running on https://localhost:${PORT}`);
-  });
+  // Only start the server if not in test mode
+  if (require.main === module) {
+    server.listen(PORT, () => {
+      console.log(`Secure server (Express & Socket.IO) is running on https://localhost:${PORT}`);
+    });
+  }
 
   // Set up Socket.IO handlers
   setupSocketHandlers(io, db);
 }
-
 
 const { PeerServer } = require('peer');
 
@@ -99,3 +105,9 @@ function loadPeerServer() {
 
   console.log('Secure Peer server is running on https://localhost:3001');
 }
+
+// Export the app and server for testing
+module.exports = { app, server, initializeServer };
+
+// Call initializeServer to set up the application and connections
+initializeServer();

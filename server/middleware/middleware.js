@@ -23,16 +23,16 @@ function loggerMiddleware(req, res, next) {
       methodColor = chalk.white(method);
   }
 
-  console.log(`[${new Date().toISOString()}] ${methodColor} ${originalUrl}`);
+  //console.log(`[${new Date().toISOString()}] ${methodColor} ${originalUrl}`);
   if (body && Object.keys(body).length > 0) {
-    console.log('Request Body:', body);
+    //console.log('Request Body:', body);
   }
 
   // Capture the response body
   const oldSend = res.send;
   res.send = function (body) {
     if (body && body.length > 0) {
-      console.log('Response Body:', body);
+      //console.log('Response Body:', body);
     }
     oldSend.apply(res, arguments);
   };

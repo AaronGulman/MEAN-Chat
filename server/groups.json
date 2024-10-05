@@ -1,20 +1,21 @@
 [
   {
-    "id": "1728127326884",
-    "name": "test",
-    "description": "123123",
+    "id": "group1",
+    "name": "Group 1",
+    "description": "First group",
     "admins": [
-      "1728127016203",
-      "1728127700836"
+      "user1"
     ],
     "members": [
-      "1728147113402"
+      "user1",
+      "user2"
     ],
     "channels": [
-      "1728127456484",
-      "1728147032415"
+      "channel1"
     ],
-    "interested": [],
+    "interested": [
+      "user3"
+    ],
     "banned": []
   }
 ]
