@@ -1,59 +1,89 @@
 <div class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
-  <div class="container p-4 bg-white rounded shadow-sm">
+    <div class="container p-4 bg-white rounded shadow-sm">
       <h1 class="text-center mb-4">MEAN Chat</h1>
       <h2 class="text-center mb-4">Register</h2>
-      <form (ngSubmit)="onRegister()" #registerForm="ngForm">
-          <div class="form-group mb-3">
-              <label for="username">Username:</label>
-              <input
-                  type="text"
-                  id="username"
-                  [(ngModel)]="username"
-                  name="username"
-                  class="form-control"
-                  required
-              />
-              <div *ngIf="registerForm.submitted && !registerForm.controls['username']?.valid" class="text-danger mt-2">
-                  Username is required.
-              </div>
+      <form (ngSubmit)="onRegister(registerForm)" #registerForm="ngForm">
+        <!-- Username Field -->
+        <div class="form-group mb-3">
+          <label for="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            [(ngModel)]="username"
+            name="username"
+            #usernameInput="ngModel"
+            class="form-control"
+            required
+          />
+          <div
+            *ngIf="
+              usernameInput.invalid &&
+              (usernameInput.dirty || usernameInput.touched || registerForm.submitted)
+            "
+            class="text-danger mt-2"
+          >
+            Username is required.
           </div>
-
-          <div class="form-group mb-3">
-              <label for="email">Email:</label>
-              <input
-                  type="email"
-                  id="email"
-                  [(ngModel)]="email"
-                  name="email"
-                  class="form-control"
-                  required
-                  #emailInput="ngModel"
-              />
-              <div *ngIf="registerForm.submitted && !registerForm.controls['email']?.valid" class="text-danger mt-2">
-                  <div *ngIf="emailInput.errors?.['required']">Email is required.</div>
-                  <div *ngIf="emailInput.errors?.['email']">Please enter a valid email address.</div>
-              </div>
+        </div>
+  
+        <!-- Email Field -->
+        <div class="form-group mb-3">
+          <label for="email">Email:</label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="email"
+            name="email"
+            class="form-control"
+            required
+            email
+            #emailInput="ngModel"
+          />
+          <div
+            *ngIf="
+              emailInput.invalid &&
+              (emailInput.dirty || emailInput.touched || registerForm.submitted)
+            "
+            class="text-danger mt-2"
+          >
+            <div *ngIf="emailInput.errors?.['required']">Email is required.</div>
+            <div *ngIf="emailInput.errors?.['email']">
+              Please enter a valid email address.
+            </div>
           </div>
-
-          <div class="form-group mb-4">
-              <label for="password">Password:</label>
-              <input
-                  type="password"
-                  id="password"
-                  [(ngModel)]="password"
-                  name="password"
-                  class="form-control"
-                  required
-              />
-              <div *ngIf="registerForm.submitted && !registerForm.controls['password']?.valid" class="text-danger mt-2">
-                  Password is required.
-              </div>
+        </div>
+  
+        <!-- Password Field -->
+        <div class="form-group mb-4">
+          <label for="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            [(ngModel)]="password"
+            name="password"
+            #passwordInput="ngModel"
+            class="form-control"
+            required
+          />
+          <div
+            *ngIf="
+              passwordInput.invalid &&
+              (passwordInput.dirty || passwordInput.touched || registerForm.submitted)
+            "
+            class="text-danger mt-2"
+          >
+            Password is required.
           </div>
-
-          <button type="submit" class="btn btn-primary w-100">Register</button>
+        </div>
+  
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary w-100">Register</button>
       </form>
+  
+      <!-- Login Link -->
       <div class="mt-4 text-center">
-          <p>Already have an account? <a routerLink="/login">Login here</a></p>
+        <p>Already have an account? <a routerLink="/login">Login here</a></p>
       </div>
+    </div>
   </div>
-</div>
+  
