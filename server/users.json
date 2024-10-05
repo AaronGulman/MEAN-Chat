@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1728127016203",
+    "username": "super",
+    "email": "super@admin.com",
+    "password": "123",
+    "roles": [
+      "superadmin"
+    ],
+    "groups": [
+      "1728127326884"
+    ],
+    "interested": []
+  }
+]

@@ -1,30 +1,36 @@
-const { ObjectId } = require('mongodb');
-const { removeInterestFromUser } = require('./user.controller');
+const fs = require('fs');
+const path = require('path');
 
-/**
- * @description Get all groups
- * @route GET /api/groups
- * @access Public
- */
-exports.getAllGroups = async (req, res, db) => {
+// File paths for storing groups and users
+const groupFilePath = path.join(__dirname, '../groups.json');
+const userFilePath = path.join(__dirname, '../users.json');
+
+// Helper function to read data from JSON files
+const readData = (filePath) => {
+  if (fs.existsSync(filePath)) {
+    const data = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(data);
+  }
+  return [];
+};
+
+// Helper function to write data to JSON files
+const writeData = (filePath, data) => {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+};
+
+exports.getAllGroups = (req, res) => {
   try {
-    // Fetch all groups
-    const groups = await db.collection('Groups').find({}).toArray();
+    const groups = readData(groupFilePath);
 
-    // Iterate over each group and populate banned users
-    const populatedGroups = await Promise.all(
-      groups.map(async (group) => {
-        if (group.banned && group.banned.length > 0) {
-          const bannedUsers = await Promise.all(
-            group.banned.map(async (userId) => {
-              return await db.collection('Users').findOne({ id: userId });
-            })
-          );
-          group.banned = bannedUsers.filter(user => user !== null && user !== undefined);
-        }
-        return group;
-      })
-    );
+    // Populate banned users
+    const users = readData(userFilePath);
+    const populatedGroups = groups.map(group => {
+      if (group.banned && group.banned.length > 0) {
+        group.banned = group.banned.map(userId => users.find(user => user.id === userId)).filter(Boolean);
+      }
+      return group;
+    });
 
     res.status(200).json(populatedGroups);
   } catch (err) {
@@ -32,14 +38,10 @@ exports.getAllGroups = async (req, res, db) => {
   }
 };
 
-
-/**
- * @description Create a new group
- * @route POST /api/groups
- * @access Public
- */
-exports.createGroup = async (req, res, db) => {
+exports.createGroup = (req, res) => {
   const { name, description, admin } = req.body;
+  const groups = readData(groupFilePath);
+
   const newGroup = {
     id: Date.now().toString(),
     name,
@@ -52,79 +54,29 @@ exports.createGroup = async (req, res, db) => {
   };
 
   try {
-    const result = await db.collection('Groups').insertOne(newGroup);
+    groups.push(newGroup);
+    writeData(groupFilePath, groups);
     res.status(201).json({ message: 'Group created', newGroup });
   } catch (err) {
     res.status(500).json({ message: 'Failed to create group', error: err.message });
   }
 };
 
-/**
- * @description Get a single group by ID
- * @route GET /api/groups/:id
- * @access Public
- */
-exports.getGroupById = async (req, res, db) => {
+exports.getGroupById = (req, res) => {
   const groupId = req.params.id;
-  
   try {
-    const group = await db.collection('Groups').findOne({ id: groupId });
+    const groups = readData(groupFilePath);
+    const group = groups.find(group => group.id === groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Populate interested users
-    if (group.interested && group.interested.length > 0) {
-      const interestedUsers = await Promise.all(
-        group.interested.map(async (userId) => {
-          return await db.collection('Users').findOne({ id: userId });
-        })
-      );
-      group.interested = interestedUsers;
-    }
-
-    // Populate member users
-    if (group.members && group.members.length > 0) {
-      const memberUsers = await Promise.all(
-        group.members.map(async (userId) => {
-          return await db.collection('Users').findOne({ id: userId });
-        })
-      );
-      group.members = memberUsers;
-    }
-
-    // Check if admins exist, if not, add the "super" user
-    if (!group.admins || group.admins.length === 0) {
-      const superUser = await db.collection('Users').findOne({ username: 'super' });
-
-      if (!superUser) {
-        return res.status(500).json({ message: 'Super user not found' });
-      }
-
-      // Add super user to the admins array
-      group.admins = [superUser.id];
-      
-      // Update the group in the database to reflect this change
-      await db.collection('Groups').updateOne({ id: groupId }, { $set: { admins: group.admins } });
-    }
-
-    // Populate admin users
-    const adminUsers = await Promise.all(
-      group.admins.map(async (userId) => {
-        return await db.collection('Users').findOne({ id: userId });
-      })
-    );
-    group.admins = adminUsers;
-
-    // Populate banned users
-    if (group.banned && group.banned.length > 0) {
-      const bannedUsers = await Promise.all(
-        group.banned.map(async (userId) => {
-          return await db.collection('Users').findOne({ id: userId });
-        })
-      );
-      group.banned = bannedUsers.filter(user => user !== null && user !== undefined);
-    }
+    // Populate users in the group
+    const users = readData(userFilePath);
+    group.interested = group.interested.map(userId => users.find(user => user.id === userId)).filter(Boolean);
+    group.members = group.members.map(userId => users.find(user => user.id === userId)).filter(Boolean);
+    group.admins = group.admins.map(userId => users.find(user => user.id === userId)).filter(Boolean);
+    group.banned = group.banned.map(userId => users.find(user => user.id === userId)).filter(Boolean);
 
     res.status(200).json(group);
   } catch (err) {
@@ -132,169 +84,139 @@ exports.getGroupById = async (req, res, db) => {
   }
 };
 
-
-
-
-/**
- * @description Update a group by ID
- * @route POST /api/groups/:id/update
- * @access Public
- */
-exports.updateGroup = async (req, res, db) => {
+exports.updateGroup = (req, res) => {
   const groupId = req.params.id;
   const updateData = req.body;
 
   try {
-    const result = await db.collection('Groups').updateOne({ id: groupId }, { $set: updateData });
-    if (result.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const index = groups.findIndex(group => group.id === groupId);
+    if (index === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    groups[index] = { ...groups[index], ...updateData };
+    writeData(groupFilePath, groups);
     res.status(200).json({ message: 'Group updated successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to update group', error: err.message });
   }
 };
 
-/**
- * @description Delete a group by ID
- * @route DELETE /api/groups/:id
- * @access Public
- */
-exports.deleteGroup = async (req, res, db) => {
+exports.deleteGroup = (req, res) => {
   const groupId = req.params.id;
 
   try {
-    // Find the group to delete
-    const group = await db.collection('Groups').findOne({ id: groupId });
+    let groups = readData(groupFilePath);
+    const group = groups.find(group => group.id === groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Remove the group from members, admins, and interested users
-    const updateMembers = db.collection('Users').updateMany(
-      { id: { $in: group.members } },
-      { $pull: { groups: groupId } }
-    );
-    
-    const updateAdmins = db.collection('Users').updateMany(
-      { id: { $in: group.admins } },
-      { $pull: { groups: groupId, roles: 'admin' } }
-    );
+    // Update related users
+    let users = readData(userFilePath);
+    users = users.map(user => {
+      user.groups = user.groups.filter(id => id !== groupId);
+      user.roles = user.roles.filter(role => role !== 'admin' || !group.admins.includes(user.id));
+      user.interested = user.interested.filter(id => id !== groupId);
+      return user;
+    });
+    writeData(userFilePath, users);
 
-    const updateInterested = db.collection('Users').updateMany(
-      { id: { $in: group.interested } },
-      { $pull: { interested: groupId } }
-    );
-
-    // Wait for all user updates to complete
-    await Promise.all([updateMembers, updateAdmins, updateInterested]);
-
-    // Delete the group from the Groups collection
-    const result = await db.collection('Groups').deleteOne({ id: groupId });
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: 'Group not found' });
-    }
-
-    res.status(200).json({ message: 'Group deleted successfully and removed from all users' });
+    // Delete the group
+    groups = groups.filter(group => group.id !== groupId);
+    writeData(groupFilePath, groups);
+    res.status(200).json({ message: 'Group deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete group', error: err.message });
   }
 };
 
-
-/**
- * @description Add a channel to a group
- * @route POST /api/groups/:id/channels
- * @access Public
- */
-exports.addChannelToGroup = async (req, res, db) => {
+exports.addChannelToGroup = (req, res) => {
   const groupId = req.params.id;
   const { channelId } = req.body;
 
   try {
-    const result = await db.collection('Groups').updateOne(
-      { id: groupId },
-      { $addToSet: { channels: channelId } }
-    );
-    if (result.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const index = groups.findIndex(group => group.id === groupId);
+    if (index === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    groups[index].channels = [...new Set([...groups[index].channels, channelId])];
+    writeData(groupFilePath, groups);
     res.status(200).json({ message: `Channel ${channelId} added to group ${groupId}` });
   } catch (err) {
     res.status(500).json({ message: 'Failed to add channel to group', error: err.message });
   }
 };
 
-/**
- * @description Remove a channel from a group
- * @route DELETE /api/groups/:id/channels/:channelId
- * @access Public
- */
-exports.removeChannelFromGroup = async (req, res, db) => {
+exports.removeChannelFromGroup = (req, res) => {
   const groupId = req.params.id;
   const channelId = req.params.channelId;
 
   try {
-    const result = await db.collection('Groups').updateOne(
-      { id: groupId },
-      { $pull: { channels: channelId } }
-    );
-    if (result.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const index = groups.findIndex(group => group.id === groupId);
+    if (index === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    groups[index].channels = groups[index].channels.filter(id => id !== channelId);
+    writeData(groupFilePath, groups);
     res.status(200).json({ message: `Channel ${channelId} removed from group ${groupId}` });
   } catch (err) {
     res.status(500).json({ message: 'Failed to remove channel from group', error: err.message });
   }
 };
 
-/**
- * @description Add a user to a group
- * @route POST /api/groups/:id/users/:userId
- * @access Public
- */
-exports.addUserToGroup = async (req, res, db) => {
+exports.addUserToGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    const result = await db.collection('Groups').updateOne(
-      { id: groupId },
-      { $addToSet: { members: userId } }
-    );
-    if (result.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    groups[groupIndex].members = [...new Set([...groups[groupIndex].members, userId])];
+    writeData(groupFilePath, groups);
+
+    const users = readData(userFilePath);
+    const userIndex = users.findIndex(user => user.id === userId);
+    if (userIndex !== -1) {
+      users[userIndex].groups = [...new Set([...users[userIndex].groups, groupId])];
+      writeData(userFilePath, users);
+    }
+
     res.status(200).json({ message: `User ${userId} added to group ${groupId}` });
   } catch (err) {
     res.status(500).json({ message: 'Failed to add user to group', error: err.message });
   }
 };
 
-/**
- * @description Remove a user from a group
- * @route DELETE /api/groups/:id/users/:userId
- * @access Public
- */
-exports.removeUserFromGroup = async (req, res, db) => {
+exports.removeUserFromGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    // Perform both updates concurrently
-    const [groupResult, userResult] = await Promise.all([
-      db.collection('Groups').updateOne({ id: groupId }, { $pull: { members: userId, admins: userId } }),
-      db.collection('Users').updateOne({ id: userId }, { $pull: { groups: groupId } })
-    ]);
-
-    // Check if the group was found and updated
-    if (groupResult.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Check if the user was found and updated
-    if (userResult.matchedCount === 0) {
-      return res.status(404).json({ message: 'User not found' });
+    groups[groupIndex].members = groups[groupIndex].members.filter(id => id !== userId);
+    groups[groupIndex].admins = groups[groupIndex].admins.filter(id => id !== userId);
+    writeData(groupFilePath, groups);
+
+    const users = readData(userFilePath);
+    const userIndex = users.findIndex(user => user.id === userId);
+    if (userIndex !== -1) {
+      users[userIndex].groups = users[userIndex].groups.filter(id => id !== groupId);
+      writeData(userFilePath, users);
     }
 
     res.status(200).json({ message: `User ${userId} removed from group ${groupId}` });
@@ -303,119 +225,88 @@ exports.removeUserFromGroup = async (req, res, db) => {
   }
 };
 
-
-/**
- * @description Promote a user to admin in a group
- * @route POST /api/groups/:id/users/:userId/promote
- * @access Public
- */
-exports.promoteToAdmin = async (req, res, db) => {
+exports.promoteToAdmin = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    const result = await db.collection('Groups').updateOne(
-      { id: groupId },
-      { $addToSet: { admins: userId },
-        $pull: { members: userId }  
-      },
-      
-    );
-    if (result.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    groups[groupIndex].admins = [...new Set([...groups[groupIndex].admins, userId])];
+    groups[groupIndex].members = groups[groupIndex].members.filter(id => id !== userId);
+    writeData(groupFilePath, groups);
+
     res.status(200).json({ message: `User ${userId} promoted to admin in group ${groupId}` });
   } catch (err) {
     res.status(500).json({ message: 'Failed to promote user to admin', error: err.message });
   }
 };
 
-/**
- * @description Demote an admin in a group
- * @route POST /api/groups/:id/users/:userId/demote
- * @access Public
- */
-exports.demoteAdmin = async (req, res, db) => {
+exports.demoteAdmin = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    const result = await db.collection('Groups').updateOne(
-      { id: groupId },
-      { $pull: { admins: userId },
-        $addToSet: { members: userId } }
-    );
-    if (result.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    groups[groupIndex].admins = groups[groupIndex].admins.filter(id => id !== userId);
+    groups[groupIndex].members = [...new Set([...groups[groupIndex].members, userId])];
+    writeData(groupFilePath, groups);
+
     res.status(200).json({ message: `User ${userId} demoted from admin in group ${groupId}` });
   } catch (err) {
     res.status(500).json({ message: 'Failed to demote admin', error: err.message });
   }
 };
 
-/**
- * @description Register a user as interested in a group
- * @route POST /api/groups/:id/users/:userId/interested
- * @access Public
- */
-exports.registerUserToGroup = async (req, res, db) => {
+exports.registerUserToGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    const result = await db.collection('Groups').updateOne(
-      { id: groupId },
-      { $addToSet: { interested: userId } }
-    );
-    if (result.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    groups[groupIndex].interested = [...new Set([...groups[groupIndex].interested, userId])];
+    writeData(groupFilePath, groups);
     res.status(200).json({ message: `User ${userId} registered as interested in group ${groupId}` });
   } catch (err) {
     res.status(500).json({ message: 'Failed to register user to group', error: err.message });
   }
 };
 
-/**
- * @description Approve an interested user and move them to members
- * @route POST /api/groups/:id/users/:userId/approve
- * @access Public
- */
-exports.approveInterestedUser = async (req, res, db) => {
+exports.approveInterestedUser = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    // Update the group: remove the user from "interested" and add them to "members"
-    const groupUpdate = db.collection('Groups').updateOne(
-      { id: groupId },
-      {
-        $pull: { interested: userId },
-        $addToSet: { members: userId },
-      }
-    );
-
-    // Remove the group from the user's "interested" list and add it to their "groups" list
-    const userUpdate = db.collection('Users').updateOne(
-      { id: userId },
-      {
-        $pull: { interested: groupId },
-        $addToSet: { groups: groupId },
-      }
-    );
-
-    // Perform both updates concurrently
-    const [groupResult, userResult] = await Promise.all([groupUpdate, userUpdate]);
-
-    // Check if the group was found and updated
-    if (groupResult.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Check if the user was found and updated
-    if (userResult.matchedCount === 0) {
-      return res.status(404).json({ message: 'User not found' });
+    groups[groupIndex].interested = groups[groupIndex].interested.filter(id => id !== userId);
+    groups[groupIndex].members = [...new Set([...groups[groupIndex].members, userId])];
+    writeData(groupFilePath, groups);
+
+    const users = readData(userFilePath);
+    const userIndex = users.findIndex(user => user.id === userId);
+    if (userIndex !== -1) {
+      users[userIndex].interested = users[userIndex].interested.filter(id => id !== groupId);
+      users[userIndex].groups = [...new Set([...users[userIndex].groups, groupId])];
+      writeData(userFilePath, users);
     }
 
     res.status(200).json({ message: `User ${userId} approved for group ${groupId}` });
@@ -424,40 +315,25 @@ exports.approveInterestedUser = async (req, res, db) => {
   }
 };
 
-
-/**
- * @description Deny an interested user and remove them from interested
- * @route DELETE /api/groups/:id/users/:userId/deny
- * @access Public
- */
-exports.denyInterestedUser = async (req, res, db) => {
+exports.denyInterestedUser = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    // Update the group: remove the user from "interested"
-    const groupUpdate = db.collection('Groups').updateOne(
-      { id: groupId },
-      { $pull: { interested: userId } }
-    );
-
-    // Update the user: remove the group from the user's "interested" list
-    const userUpdate = db.collection('Users').updateOne(
-      { id: userId },
-      { $pull: { interested: groupId } }
-    );
-
-    // Perform both updates concurrently
-    const [groupResult, userResult] = await Promise.all([groupUpdate, userUpdate]);
-
-    // Check if the group was found and updated
-    if (groupResult.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Check if the user was found and updated
-    if (userResult.matchedCount === 0) {
-      return res.status(404).json({ message: 'User not found' });
+    groups[groupIndex].interested = groups[groupIndex].interested.filter(id => id !== userId);
+    writeData(groupFilePath, groups);
+
+    const users = readData(userFilePath);
+    const userIndex = users.findIndex(user => user.id === userId);
+    if (userIndex !== -1) {
+      users[userIndex].interested = users[userIndex].interested.filter(id => id !== groupId);
+      writeData(userFilePath, users);
     }
 
     res.status(200).json({ message: `User ${userId} denied from group ${groupId}` });
@@ -466,33 +342,26 @@ exports.denyInterestedUser = async (req, res, db) => {
   }
 };
 
-/**
- * @description Ban a user from a group
- * @route POST /api/groups/:id/users/:userId/ban
- * @access Public
- */
-exports.banUserFromGroup = async (req, res, db) => {
+exports.banUserFromGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
 
   try {
-    // Perform both updates concurrently
-    const [groupResult, userResult] = await Promise.all([
-      db.collection('Groups').updateOne({ id: groupId }, {
-        $addToSet: { banned: userId },  // Add the user to the banned array
-        $pull: { members: userId }      // Remove the user from the members array
-      }),
-      db.collection('Users').updateOne({ id: userId }, { $pull: { groups: groupId } })
-    ]);
-
-    // Check if the group was found and updated
-    if (groupResult.matchedCount === 0) {
+    const groups = readData(groupFilePath);
+    const groupIndex = groups.findIndex(group => group.id === groupId);
+    if (groupIndex === -1) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Check if the user was found and updated
-    if (userResult.matchedCount === 0) {
-      return res.status(404).json({ message: 'User not found' });
+    groups[groupIndex].banned = [...new Set([...groups[groupIndex].banned, userId])];
+    groups[groupIndex].members = groups[groupIndex].members.filter(id => id !== userId);
+    writeData(groupFilePath, groups);
+
+    const users = readData(userFilePath);
+    const userIndex = users.findIndex(user => user.id === userId);
+    if (userIndex !== -1) {
+      users[userIndex].groups = users[userIndex].groups.filter(id => id !== groupId);
+      writeData(userFilePath, users);
     }
 
     res.status(200).json({ message: `User ${userId} banned from group ${groupId}` });
@@ -500,4 +369,3 @@ exports.banUserFromGroup = async (req, res, db) => {
     res.status(500).json({ message: 'Failed to ban user', error: err.message });
   }
 };
-

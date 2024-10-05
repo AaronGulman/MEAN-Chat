@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1728127326884",
+    "name": "test",
+    "description": "123123",
+    "admins": [
+      "1728127016203"
+    ],
+    "members": [],
+    "channels": [
+      "1728127456484"
+    ],
+    "interested": [],
+    "banned": []
+  }
+]
