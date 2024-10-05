@@ -5,6 +5,10 @@ function setupSocketHandlers(io, db) {
   io.on('connection', (socket) => {
     console.log(chalk.green('A user connected:'), socket.id);
 
+
+    io.emit('userid',socket.id); // TODO: delete if not needed
+    io.to(socket.id).emit('ownid', socket.id); // TODO: delete if not needed
+
     socket.on('joinChannel', ({ channelId }) => {
       console.log(chalk.blue(`User ${socket.id} joining channel: ${channelId}`));
       socket.join(channelId);
@@ -33,6 +37,12 @@ function setupSocketHandlers(io, db) {
     socket.on('receiveMessage', ({ channelId, userId, message, timeStamp }) => {
       console.log(chalk.cyan(`Message received in channel ${channelId} from user ${userId}: ${message} at ${timeStamp}`));
     });
+
+
+    socket.on('peerID',(message)=>{
+      io.emit('peerID',message);
+      console.log("Peer ID: ",message)
+    })
 
     socket.on('disconnect', () => {
       console.log(chalk.red('User disconnected:'), socket.id);

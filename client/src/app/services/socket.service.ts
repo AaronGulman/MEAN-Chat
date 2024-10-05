@@ -11,7 +11,8 @@ const SERVER_URL = 'https://localhost:3000';
   providedIn: 'root'
 })
 export class SocketService {
-  private socket: any;
+  public socket: any;
+  public socketId: any;
 
   constructor(private uploadService: UploadService) {}
 
@@ -82,6 +83,21 @@ export class SocketService {
       }
       this.socket.on('receiveMessage', (data: Message) => {
         observer.next(data);
+      });
+    });
+  }
+
+
+  peerID(peerID: string) {
+    this.socket.emit('peerID', peerID);
+  }
+  
+
+  getPeerID(): Observable<string> {
+    return new Observable((observer) => {
+      this.socket.on('peerID', (peerID: string) => {
+        console.log("PeerID", peerID);
+        observer.next(peerID);
       });
     });
   }

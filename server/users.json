@@ -28,5 +28,19 @@
     ],
     "interested": [],
     "avatarPath": ""
+  },
+  {
+    "id": "1728147113402",
+    "username": "dwacochan",
+    "email": "123",
+    "password": "123",
+    "roles": [
+      "user"
+    ],
+    "groups": [
+      "1728127326884"
+    ],
+    "interested": [],
+    "avatarPath": ""
   }
 ]

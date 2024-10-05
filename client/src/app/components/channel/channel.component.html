@@ -26,6 +26,9 @@
                         <li class="nav-item">
                             <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')">Settings</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'video'}" (click)="selectNavItem('video')">Video</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="logout-btn-container d-flex justify-content-center mt-3">
@@ -136,6 +139,41 @@
                         </div>
                     </form>
                 </div>
+
+                <!-- Video Tab -->
+                <div *ngIf="selectedNav === 'video'" class="video-tab">
+                    <div class="container-fluid bg-light rounded p-4 shadow-sm">
+                    <!-- Streaming Buttons Row -->
+                    <div class="row justify-content-center mb-4">
+                        <button mat-raised-button color="primary" class="btn btn-primary m-2" [disabled]="isCallStarted" (click)="streamCamera()">Stream with Camera</button>
+                        <button mat-raised-button class="btn btn-secondary m-2" [disabled]="isCallStarted" (click)="streamScreen()">Stream with Screen</button>
+                        <button mat-raised-button color="warn" class="btn btn-danger m-2" [disabled]="!(isCallStarted)" (click)="endCall()">End Call</button>
+                    </div>
+                    
+                    <!-- Peers List -->
+                    <h4 class="text-center text-primary mb-3">Available Peers</h4>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li *ngFor="let peerId of peerList" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <span>Peer ID: {{ peerId }}</span>
+                        <button class="btn btn-outline-primary btn-sm" (click)="calling(peerId)">Call</button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Videos Grid -->
+                    <div class="video-grid row g-4">
+                        <div *ngFor="let video of videos" class="col-md-4 video-container">
+                        <div class="video-card p-3 border rounded shadow-sm position-relative">
+                            <span *ngIf="video.userId !== ownID; else currentUserVideoLabel" class="video-label position-absolute top-0 start-0 bg-primary text-white px-2 py-1 rounded-end">Peer: {{ video.userId }}</span>
+                            <ng-template #currentUserVideoLabel>
+                            <span class="video-label position-absolute top-0 start-0 bg-success text-white px-2 py-1 rounded-end">You: {{ video.userId }}</span>
+                            </ng-template>
+                            <video [srcObject]="video.srcObject" controls autoplay [muted]="video.muted" class="w-100 rounded"></video>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+  
             </main>
         </div>
     </div>

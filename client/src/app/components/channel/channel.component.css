@@ -239,3 +239,44 @@
 .file-upload-group {
     margin-top: 1rem;
 }
+
+.video-tab {
+    margin-top: 20px;
+  }
+  
+  .video-card {
+    height: 300px; /* Set a fixed height for video containers */
+  }
+  
+  .video-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .video-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .video-container video {
+    max-height: 100%;
+  }
+  
+  .btn {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .btn:hover {
+    transform: scale(1.05);
+  }
+  
+  .list-group-item {
+    cursor: pointer;
+  }
+  
+  .list-group-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  

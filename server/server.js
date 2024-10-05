@@ -47,6 +47,7 @@ client.connect()
     db = client.db(dbName);
     initializeSuperUser(db);
     loadServer(db);
+    loadPeerServer();
   })
   .catch(err => console.error('Failed to connect to MongoDB', err));
 
@@ -76,4 +77,25 @@ function loadServer(db) {
 
   // Set up Socket.IO handlers
   setupSocketHandlers(io, db);
+}
+
+
+const { PeerServer } = require('peer');
+
+function loadPeerServer() {
+  const peerServer = PeerServer({
+    port: 3001,
+    path: '/',
+    ssl: credentials 
+  });
+
+  peerServer.on('connection', (client) => {
+    console.log(`Peer client connected: ${client.getId()}`);
+  });
+
+  peerServer.on('disconnect', (client) => {
+    console.log(`Peer client disconnected: ${client.getId()}`);
+  });
+
+  console.log('Secure Peer server is running on https://localhost:3001');
 }
