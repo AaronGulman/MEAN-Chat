@@ -10,7 +10,7 @@ import { UserService } from './user.service';
   providedIn: 'root',
 })
 export class GroupService {
-  private apiUrl = 'http://localhost:3000/api/groups'; // Update with your backend URL
+  private apiUrl = 'https://localhost:3000/api/groups'; // Update with your backend URL
 
   constructor(private http: HttpClient, private userService: UserService) {}
 

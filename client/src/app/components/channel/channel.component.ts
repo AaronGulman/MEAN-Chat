@@ -166,7 +166,7 @@ export class ChannelComponent implements OnInit, AfterViewChecked {
     try {
       this.renderer.setProperty(this.chatHistory.nativeElement, 'scrollTop', this.chatHistory.nativeElement.scrollHeight);
     } catch (err) {
-      console.error('Error scrolling chat history', err);
+      //console.error('Error scrolling chat history', err);
     }
   }
 

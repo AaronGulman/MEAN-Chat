@@ -1,11 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { MongoClient, Timestamp } = require('mongodb');
-const http = require('http');
+const { MongoClient } = require('mongodb');
+const https = require('https'); // For HTTPS server
+const fs = require('fs');
 const socketIo = require('socket.io');
 const setupSocketHandlers = require('./socket.js');
-const initializeSuperUser = require('./initSuperUser.js')
+const initializeSuperUser = require('./initSuperUser.js');
 const uploadRoutes = require('./upload');
 
 const authRoutes = require('./routes/auth.routes.js');
@@ -13,21 +14,29 @@ const userRoutes = require('./routes/user.routes.js');
 const groupRoutes = require('./routes/group.routes.js');
 const channelRoutes = require('./routes/channel.routes.js');
 const loggerMiddleware = require('./middleware/middleware.js');
-const { time } = require('console');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-const server = http.createServer(app);
+// Load SSL Certificate and Key for HTTPS
+const privateKey = fs.readFileSync('./config/server.key', 'utf8');
+const certificate = fs.readFileSync('./config/server.cert', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
+// Create HTTPS server for Express
+const server = https.createServer(credentials, app);
+
+// Initialize Socket.IO with HTTPS server on Port 3000
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:4200',
+    origin: 'https://localhost:4200',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
     credentials: true
   }
 });
 
+// MongoDB Setup
 const uri = 'mongodb://localhost:27017';
 const client = new MongoClient(uri);
 const dbName = 'Frameworks-Assignment';
@@ -54,14 +63,17 @@ function loadServer(db) {
   // Serve uploads directory as static files
   app.use('/uploads', express.static('uploads'));
 
+  // Error handling middleware
   app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something went wrong!');
   });
 
+  // Start the HTTPS server on port 3000
   server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Secure server (Express & Socket.IO) is running on https://localhost:${PORT}`);
   });
 
+  // Set up Socket.IO handlers
   setupSocketHandlers(io, db);
 }

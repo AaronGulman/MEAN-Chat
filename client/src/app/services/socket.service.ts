@@ -5,7 +5,7 @@ import { Message } from '../models/message';
 import { User } from '../models/user.model';
 import { UploadService } from './upload.service';
 
-const SERVER_URL = 'http://localhost:3000';
+const SERVER_URL = 'https://localhost:3000';
 
 @Injectable({
   providedIn: 'root'
