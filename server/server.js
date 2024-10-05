@@ -29,7 +29,7 @@ const server = https.createServer(credentials, app);
 // Initialize Socket.IO with HTTPS server on Port 3000
 const io = socketIo(server, {
   cors: {
-    origin: 'https://localhost:4200',
+    origin: 'http://localhost:4200',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
     credentials: true
