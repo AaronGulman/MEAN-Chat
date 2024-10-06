@@ -15,7 +15,8 @@
     ],
     "interested": [
       "user3",
-      "1728195303177"
+      "1728195303177",
+      "1728228965961"
     ],
     "banned": []
   },
@@ -26,6 +27,66 @@
     "admins": [
       "1728195266337",
       "1728195303177"
+    ],
+    "members": [],
+    "channels": [],
+    "interested": [],
+    "banned": []
+  },
+  {
+    "id": "1728228325740",
+    "name": "New Group",
+    "description": "This is a new group description.",
+    "admins": [
+      "1728195266337"
+    ],
+    "members": [],
+    "channels": [],
+    "interested": [],
+    "banned": []
+  },
+  {
+    "id": "1728228540387",
+    "name": "New Grou",
+    "description": "This is a new group description.",
+    "admins": [
+      "1728228340284"
+    ],
+    "members": [],
+    "channels": [],
+    "interested": [],
+    "banned": []
+  },
+  {
+    "id": "1728228831301",
+    "name": "N",
+    "description": "This is a new group description.",
+    "admins": [
+      "1728228554421"
+    ],
+    "members": [],
+    "channels": [],
+    "interested": [],
+    "banned": []
+  },
+  {
+    "id": "1728228946669",
+    "name": "New Group",
+    "description": "This is a new group description.",
+    "admins": [
+      "1728228890001"
+    ],
+    "members": [],
+    "channels": [],
+    "interested": [],
+    "banned": []
+  },
+  {
+    "id": "1728228994289",
+    "name": "New G",
+    "description": "This is a new group description.",
+    "admins": [
+      "1728228965961"
     ],
     "members": [],
     "channels": [],
