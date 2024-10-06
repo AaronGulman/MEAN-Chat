@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
-import { ChannelService } from '../../services/chat.service'; // Renamed to match the previous service
+import { ChannelService } from '../../services/chat.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Group } from '../../models/group.model';
 import { User } from '../../models/user.model';

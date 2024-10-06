@@ -7,7 +7,7 @@ import { Channel } from '../models/channel.model';
   providedIn: 'root',
 })
 export class ChannelService {
-  private apiUrl = 'https://localhost:3000/api/channels'; // Update with your backend URL
+  private apiUrl = 'https://localhost:3000/api/channels';
 
   constructor(private http: HttpClient) {}
 
