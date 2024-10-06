@@ -3,12 +3,15 @@ const chaiHttp = require('chai-http');
 const path = require('path');
 const fs = require('fs');
 const { expect } = chai;
-const { app } = require('../server'); // Adjust this import based on your server entry point
+const { app } = require('../server'); 
 
 chai.use(chaiHttp);
 
 // Mock file paths
 const testUserFilePath = path.join(__dirname, '../users.json');
+
+// Backup original data
+let originalUsersData = null;
 
 // Helper function to reset the mock data files
 const resetTestFiles = () => {
@@ -21,13 +24,19 @@ const resetTestFiles = () => {
   fs.writeFileSync(testUserFilePath, JSON.stringify(initialUsers, null, 2), 'utf8');
 };
 
-// Reset the test files before and after each test
+// Save original data before all tests
+before(() => {
+  originalUsersData = fs.readFileSync(testUserFilePath, 'utf8');
+});
+
+// Reset the test files before each test
 beforeEach(() => {
   resetTestFiles();
 });
 
+// Restore original data after all tests
 after(() => {
-  resetTestFiles();
+  fs.writeFileSync(testUserFilePath, originalUsersData, 'utf8');
 });
 
 

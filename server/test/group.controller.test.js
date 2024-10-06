@@ -11,6 +11,10 @@ chai.use(chaiHttp);
 const testGroupFilePath = path.join(__dirname, '../groups.json');
 const testUserFilePath = path.join(__dirname, '../users.json');
 
+// Backup original data
+let originalGroupsData = null;
+let originalUsersData = null;
+
 // Helper function to reset the mock data files
 const resetTestFiles = () => {
   const initialGroups = [
@@ -36,13 +40,21 @@ const resetTestFiles = () => {
   fs.writeFileSync(testUserFilePath, JSON.stringify(initialUsers, null, 2), 'utf8');
 };
 
-// Reset the test files before and after each test
+// Save original data before all tests
+before(() => {
+  originalGroupsData = fs.readFileSync(testGroupFilePath, 'utf8');
+  originalUsersData = fs.readFileSync(testUserFilePath, 'utf8');
+});
+
+// Reset the test files before each test
 beforeEach(() => {
   resetTestFiles();
 });
 
+// Restore original data after all tests
 after(() => {
-  resetTestFiles();
+  fs.writeFileSync(testGroupFilePath, originalGroupsData, 'utf8');
+  fs.writeFileSync(testUserFilePath, originalUsersData, 'utf8');
 });
 
 describe('Group Controller', () => {
