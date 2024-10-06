@@ -14,8 +14,22 @@
       "channel1"
     ],
     "interested": [
-      "user3"
+      "user3",
+      "1728195303177"
     ],
+    "banned": []
+  },
+  {
+    "id": "1728195291386",
+    "name": "123",
+    "description": "123123",
+    "admins": [
+      "1728195266337",
+      "1728195303177"
+    ],
+    "members": [],
+    "channels": [],
+    "interested": [],
     "banned": []
   }
 ]

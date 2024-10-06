@@ -35,5 +35,34 @@
       "group1"
     ],
     "roles": []
+  },
+  {
+    "id": "1728195266337",
+    "username": "super",
+    "email": "super@admin.com",
+    "password": "123",
+    "roles": [
+      "superadmin"
+    ],
+    "groups": [
+      "1728195291386"
+    ],
+    "interested": []
+  },
+  {
+    "id": "1728195303177",
+    "username": "draco",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "user"
+    ],
+    "groups": [
+      "1728195291386"
+    ],
+    "interested": [
+      "group1"
+    ],
+    "avatarPath": ""
   }
 ]

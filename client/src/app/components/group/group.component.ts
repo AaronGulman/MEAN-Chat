@@ -207,12 +207,17 @@ export class GroupComponent implements OnInit {
   }
 
   banUser(user: User) {
-    this.groupService.banUserFromGroup(this.group.id, user.id).subscribe(
-      () => {
-        this.loadGroup(this.group.id);
-      },
-      (error) => console.error('Error banning user:', error)
-    );
+    if(user.roles.includes('superadmin')){
+      alert("You cannot ban a superadmin");
+    }else if (confirm(`Ban ${user.username}?`)) {
+      this.groupService.banUserFromGroup(this.group.id, user.id).subscribe(
+        () => {
+          this.loadGroup(this.group.id);
+        },
+        (error) => console.error('Error banning user:', error)
+      );
+    }
+    
   }
 
   approveUser(user: User) {
