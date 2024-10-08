@@ -1,70 +1,16 @@
 [
   {
-    "id": "1728228965961",
+    "id": "1728394340370",
     "username": "super",
-    "email": "newuser@example.com",
+    "email": "super@admin.com",
     "password": "123",
     "roles": [
       "superadmin"
     ],
     "groups": [
-      "1728228994289",
-      "1728382315532"
+      "1728394743196",
+      "1728394903259"
     ],
-    "interested": [
-      "group1"
-    ]
-  },
-  {
-    "id": "1728381686575",
-    "username": "111",
-    "email": "1092469607@qq.com",
-    "password": "123",
-    "roles": [
-      "superadmin"
-    ],
-    "groups": [
-      "1728382315532"
-    ],
-    "interested": [
-      "group1"
-    ],
-    "avatarPath": ""
-  },
-  {
-    "id": "1728382428608",
-    "username": "draco1",
-    "email": "1092469607@qq.com",
-    "password": "123",
-    "roles": [
-      "admin"
-    ],
-    "groups": [
-      "1728228994289"
-    ],
-    "interested": [
-      "1728382315532",
-      "group1"
-    ],
-    "avatarPath": ""
-  },
-  {
-    "id": "1728383159919",
-    "username": "dwacochan",
-    "email": "1092469607@qq.com",
-    "password": "123",
-    "roles": [
-      "user"
-    ],
-    "groups": [
-      "1728228994289"
-    ],
-    "interested": [
-      "1728382315532",
-      "group1"
-    ],
-    "avatarPath": [
-      "3aed6f86e2f385cabd33099c0f873797.gif"
-    ]
+    "interested": []
   }
 ]

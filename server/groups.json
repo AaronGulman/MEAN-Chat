@@ -1,65 +1,26 @@
 [
   {
-    "id": "group1",
-    "name": "Group 1",
-    "description": "First group",
-    "admins": [
-      "user1"
-    ],
-    "members": [
-      "user1",
-      "user2"
-    ],
-    "channels": [
-      "channel1"
-    ],
-    "interested": [
-      "user3",
-      "1728195303177",
-      "1728228965961",
-      "1728381513265",
-      "1728381686575",
-      "1728382428608",
-      "1728383159919"
-    ],
-    "banned": []
-  },
-  {
-    "id": "1728228994289",
-    "name": "New G",
-    "description": "This is a new group description.",
-    "admins": [
-      "1728382428608",
-      "1728381686575",
-      "1728228965961"
-    ],
-    "members": [
-      "1728383159919"
-    ],
-    "channels": [
-      "1728384277038"
-    ],
-    "interested": [],
-    "banned": [
-      "1728381513265",
-      "1728228031307",
-      "1728227968308"
-    ]
-  },
-  {
-    "id": "1728382315532",
+    "id": "1728394743196",
     "name": "test",
     "description": "123",
     "admins": [
-      "1728381686575",
-      "1728228965961"
+      "1728394340370"
     ],
     "members": [],
     "channels": [],
-    "interested": [
-      "1728382428608",
-      "1728383159919"
+    "interested": [],
+    "banned": []
+  },
+  {
+    "id": "1728394903259",
+    "name": "Super Group",
+    "description": "Group created by superadmin for testing.Group created by superadmin for testing.",
+    "admins": [
+      "1728394340370"
     ],
+    "members": [],
+    "channels": [],
+    "interested": [],
     "banned": []
   }
 ]
