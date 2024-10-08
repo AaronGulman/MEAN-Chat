@@ -56,7 +56,9 @@
     "roles": [
       "user"
     ],
-    "groups": [],
+    "groups": [
+      "1728228994289"
+    ],
     "interested": [],
     "avatarPath": ""
   },
@@ -68,7 +70,9 @@
     "roles": [
       "user"
     ],
-    "groups": [],
+    "groups": [
+      "1728228994289"
+    ],
     "interested": [],
     "avatarPath": ""
   },
@@ -119,6 +123,20 @@
       "1728382315532",
       "group1"
     ],
+    "avatarPath": ""
+  },
+  {
+    "id": "1728383159919",
+    "username": "dwacochan",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "user"
+    ],
+    "groups": [
+      "1728228994289"
+    ],
+    "interested": [],
     "avatarPath": ""
   }
 ]

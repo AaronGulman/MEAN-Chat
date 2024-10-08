@@ -46,7 +46,7 @@
                 <div *ngIf="selectedNav === 'channel'" class="chat-container">
                     <!-- Chat History -->
                     <div class="chat-history" #chatHistory>
-                        <div *ngFor="let message of messages" class="d-flex mb-3" [ngClass]="{'justify-content-end': message.userId === currentUser.username, 'justify-content-start': message.userId !== currentUser.username}">
+                        <div *ngFor="let message of messageSignal()" class="d-flex mb-3" [ngClass]="{'justify-content-end': message.userId === currentUser.username, 'justify-content-start': message.userId !== currentUser.username}">
                             <!-- User Avatar -->
                             <div *ngIf="message.userId !== currentUser.username" class="me-2">
                                 <img [src]="message.avatarPath || '/assets/avatar.jpg'" alt="User Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">

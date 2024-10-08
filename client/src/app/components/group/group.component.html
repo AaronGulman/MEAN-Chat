@@ -209,6 +209,35 @@
                                 <p>None</p>
                             </ng-template>
 
+
+
+                            <!-- Available Section -->
+                            <div *ngIf="isCurrentUserAdmin() || role === 'superadmin'">
+                                <h5>Available Users</h5>
+                                <div *ngIf="availableUser && availableUser.length > 0; else noAvailable">
+                                    <ul class="list-group mb-4">
+                                        <li *ngFor="let user of availableUser" class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
+                                                <p class="mb-1">Roles: 
+                                                    <span *ngFor="let role of user.roles; let isLast = last">
+                                                        {{ role }}<span *ngIf="!isLast">, </span>
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div *ngIf="isCurrentUserAdmin() || role === 'superadmin'">
+                                                <button class="btn btn-success btn-sm me-2" (click)="addUser(user)">
+                                                    Add
+                                                </button>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <ng-template #noAvailable>
+                                    <p>None</p>
+                                </ng-template>
+                            </div >
+
                             <!-- Banned Section -->
                             <h5>Banned</h5>
                             <div *ngIf="group.banned && group.banned.length > 0; else noBanned">
@@ -223,6 +252,8 @@
                             <ng-template #noBanned>
                                 <p>None</p>
                             </ng-template>
+
+                            
                         </div>
                     </div>
                 </div>

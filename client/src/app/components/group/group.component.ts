@@ -30,6 +30,7 @@ export class GroupComponent implements OnInit {
   newChannelDescription: string = '';
   currentGroupRole: string = '';
   currentUser: User = new User('', '', '','');
+  availableUser: User[] = [];
 
   constructor(
     private groupService: GroupService,
@@ -46,6 +47,18 @@ export class GroupComponent implements OnInit {
       const groupId = params['id'];
       this.loadGroup(groupId);
     });
+  }
+
+  loadAvailableUsers() {
+    this.userService.getUsers().subscribe(
+      (users) => {
+        this.availableUser = users.filter(user => 
+          !this.group.members.some(member => member.id === user.id) && 
+          !this.group.admins.some(admin => admin.id === user.id)
+        );
+      },
+      (error) => console.error('Error loading all users:', error)
+    );
   }
 
   loadGroup(groupId: string) {
@@ -69,16 +82,15 @@ export class GroupComponent implements OnInit {
               });
           }
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
-  
-          // Use forkJoin to fetch both the group and the channels simultaneously
           forkJoin([
             this.groupService.getGroupById(groupId),
             this.channelService.getChannels(groupId)
           ]).subscribe(
             ([group, channels]) => {
               this.group = group;
-              this.group.channels = channels;  // Assuming channels are added to the group object
+              this.group.channels = channels;
               this.currentGroupRole = this.getGroupRole(user.id);
+              this.loadAvailableUsers();
               console.log(this.group);
             },
             (error) => console.error('Error loading group or channels:', error)
@@ -271,6 +283,15 @@ export class GroupComponent implements OnInit {
         this.goBack();
       });
     }
+  }
+
+  addUser(user: User){
+    this.groupService.addUserToGroup(this.group.id, user.id).subscribe(
+      () => {
+        this.loadGroup(this.group.id);
+      },
+      (error) => console.error('Error adding user:', error)
+    );
   }
 
   goBack() {
