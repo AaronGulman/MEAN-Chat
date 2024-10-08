@@ -32,7 +32,6 @@ export class GroupComponent implements OnInit {
   currentUser: User = new User('', '', '','');
   availableUser: User[] = [];
 
-
   constructor(
     private groupService: GroupService,
     private channelService: ChannelService,
