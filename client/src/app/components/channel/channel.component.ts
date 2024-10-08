@@ -81,6 +81,7 @@ export class ChannelComponent implements OnInit {
     private renderer: Renderer2
   ) {}
 
+  // Initialize component and load group/channel data
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.channelId = params['channelId'];
@@ -89,6 +90,7 @@ export class ChannelComponent implements OnInit {
     this.ownID = this.peerService.myPeerId;
   }
 
+  // Load group data based on groupId
   loadGroup(groupId: string) {
     this.groupService.getGroupById(groupId).subscribe(group => {
       this.group = group;
@@ -96,6 +98,7 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  // Load channel data based on groupId and channelId
   loadChannel(groupId: string, channelId: string) {
     const loggedInUser = this.authService.getLoggedInUser();
     if (!loggedInUser) {
@@ -115,6 +118,7 @@ export class ChannelComponent implements OnInit {
     this.socketService.getMessage().subscribe(message => this.handleIncomingMessage(message));
   }
 
+  // Set user's avatar path or use a default one
   private setUserAvatarPath(user: User) {
     if (!user.avatarPath) {
       this.currentUser.avatarPath = "/assets/avatar.jpg";
@@ -126,6 +130,7 @@ export class ChannelComponent implements OnInit {
     }
   }
 
+  // Handle peer ID logic for streaming purposes
   private handlePeerID(peerID: string) {
     if (peerID !== this.ownID) {
       if (this.peerList.includes(peerID)) {
@@ -136,10 +141,12 @@ export class ChannelComponent implements OnInit {
     }
   }
 
+  // Determine the role of the user in the channel
   private determineUserRole(user: User) {
     return user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
   }
 
+  // Initialize channel data including channel info and messages
   private initializeChannel(response: { channel: Channel; messages: Message[] }) {
     this.channel = response.channel;
     this.messageSignal.set(response.messages);
@@ -147,6 +154,7 @@ export class ChannelComponent implements OnInit {
     this.loadMembers();
   }
 
+  // Update messages to include avatars for the users who sent them
   private updateMessagesWithAvatar(messages: Message[]) {
     messages.forEach(message => {
       if (message.uploadUrl) {
@@ -163,8 +171,9 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  // Fetch files attached to a message
   private fetchMessageFiles(message: any) {
-    message.uploadUrl.forEach((url:any, index:any) => {
+    message.uploadUrl.forEach((url: any, index: any) => {
       this.uploadService.getFile(url).subscribe(blob => {
         const objectURL = URL.createObjectURL(blob);
         message.uploadUrl![index] = objectURL;
@@ -172,6 +181,7 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  // Handle incoming messages from the socket
   private handleIncomingMessage(message: Message) {
     if (message.uploadUrl) {
       this.fetchMessageFiles(message);
@@ -187,21 +197,25 @@ export class ChannelComponent implements OnInit {
     this.messageSignal.update(messages => [...messages, message]);
   }
 
+  // Auto-scroll chat to the bottom when new messages arrive
   private autoScrollEffect = effect(() => {
     const messages = this.messageSignal();
     this.scrollToBottom();
   });
 
+  // Scroll to the bottom of the chat history
   scrollToBottom(): void {
     if (this.chatHistory) {
       this.renderer.setProperty(this.chatHistory.nativeElement, 'scrollTop', this.chatHistory.nativeElement.scrollHeight);
     }
   }
 
+  // Handle file selection for message attachments
   onFileSelected(event: any) {
     this.uploadFiles = Array.from(event.target.files);
   }
 
+  // Send a message in the channel
   sendMessage() {
     if (this.uploadFiles.length > 0) {
       this.uploadService.uploadFiles(this.uploadFiles).subscribe(response => {
@@ -217,31 +231,37 @@ export class ChannelComponent implements OnInit {
     }
   }
 
+  // Reset the message input field and clear attachments
   private resetMessageInput() {
     this.newMessage = '';
     this.uploadFiles = [];
     this.fileInput.nativeElement.value = '';
   }
 
+  // Select the navigation item
   selectNavItem(navItem: string) {
     this.selectedNav = navItem;
   }
 
+  // Navigate back to the group view and leave the channel
   goBack() {
     this.router.navigate(['/group/' + this.group.id]);
     this.socketService.leaveChannel(this.channelId, this.currentUser);
   }
 
+  // Check if the current user is an admin
   isCurrentUserAdmin(): boolean {
     return this.group.admins.some(admin => admin.id === this.currentUser.id);
   }
 
+  // Confirm and delete the channel
   confirmDeleteChannel() {
     if (confirm('Are you sure you want to delete this channel? This action cannot be undone.')) {
       this.deleteChannel();
     }
   }
 
+  // Delete the current channel
   deleteChannel() {
     this.channelService.deleteChannel(this.group.id, this.channel.id).subscribe(() => {
       this.groupService.removeChannelFromGroup(this.group.id, this.channelId).subscribe(() => {
@@ -251,6 +271,7 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  // Update the channel's details
   updateChannel() {
     this.channelService.updateChannel(this.group.id, this.channel.id, {
       name: this.channel.name,
@@ -262,6 +283,7 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  // Add a user to the channel
   addUserToChannel(member: User) {
     const confirmAdd = confirm(`Are you sure you want to add ${member.username} to the channel?`);
     if (confirmAdd) {
@@ -277,6 +299,7 @@ export class ChannelComponent implements OnInit {
     }
   }
   
+  // Remove a user from the channel
   removeUserFromChannel(member: User) {
     const confirmRemove = confirm(`Are you sure you want to remove ${member.username} from the channel?`);
     if (confirmRemove) {
@@ -292,6 +315,7 @@ export class ChannelComponent implements OnInit {
     }
   }
   
+  // Leave the channel
   leaveChannel() {
     const confirmLeave = confirm('Are you sure you want to leave the channel?');
     if (confirmLeave) {
@@ -305,24 +329,15 @@ export class ChannelComponent implements OnInit {
       );
     }
   }
-  
 
+  // Load the members of the channel
   loadMembers() {
     const channelUserIds = this.channel.users || [];
     this.channelMembers = this.group.members.filter(user => channelUserIds.includes(user.id));
     this.availableMembers = this.group.members.filter(user => !channelUserIds.includes(user.id));
   }
 
-
-
-
-
-
-
-
-
-
-
+  // Add the user's own video to the video list
   addMyVideo(stream: MediaStream) {
     this.videos.push({
       muted: true,
@@ -331,6 +346,7 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  // Add another user's video to the video list
   addOtherUserVideo(userId: string, stream: MediaStream) {
     const newVideo: VideoElement = { muted: false, srcObject: stream, userId };
     const index = this.videos.findIndex(video => video.userId === userId);
@@ -341,12 +357,14 @@ export class ChannelComponent implements OnInit {
     }
   }
 
+  // Set up the listener for incoming calls
   private setupCallListener(): void {
     if (this.isListenerAdded) return;
     this.isListenerAdded = true;
     this.peerService.myPeer.on('call', (call: any) => this.handleIncomingCall(call));
   }
 
+  // Handle an incoming call
   private handleIncomingCall(call: any): void {
     if (this.currentStream) {
       call.answer(this.currentStream);
@@ -360,6 +378,7 @@ export class ChannelComponent implements OnInit {
     this.addCallListeners(call);
   }
 
+  // Initiate a call to another peer
   calling(peerID: string): void {
     if (!this.isReadyToCall(peerID)) return;
     const call = this.peerService.myPeer.call(peerID, this.currentStream, { metadata: { peerId: this.peerService.myPeerId } });
@@ -368,6 +387,7 @@ export class ChannelComponent implements OnInit {
     this.addCallListeners(call, peerID);
   }
 
+  // Check if the user is ready to call another peer
   private isReadyToCall(peerID: string): boolean {
     if (!this.currentStream || peerID === this.ownID || this.calls.some(call => call.peer === peerID)) {
       alert('Cannot start a call. Check your setup.');
@@ -376,6 +396,7 @@ export class ChannelComponent implements OnInit {
     return confirm(`Do you want to call ${peerID}?`);
   }
 
+  // Add listeners for the call (handle remote streams and call closure)
   private addCallListeners(call: any, peerID: string = ''): void {
     call.on('stream', (remoteStream: MediaStream) => this.addOtherUserVideo(peerID || call.metadata.peerId, remoteStream));
     call.on('close', () => {
@@ -384,6 +405,7 @@ export class ChannelComponent implements OnInit {
     });
   }
 
+  // End an ongoing call
   endCall(): void {
     this.calls.forEach(call => call.close());
     this.cleanupStreams();
@@ -395,14 +417,16 @@ export class ChannelComponent implements OnInit {
     this.peerList = this.peerList.filter(peerID => peerID !== this.ownID);
   }
 
+  // Clean up media streams after ending the call
   private cleanupStreams(): void {
     if (this.currentStream) {
-      this.currentStream.getTracks().forEach((track:any) => track.stop());
+      this.currentStream.getTracks().forEach((track: any) => track.stop());
       this.currentStream = null;
     }
     this.videos = [];
   }
 
+  // Start streaming (either camera or screen)
   private async startStreaming(getMediaStream: () => Promise<MediaStream>) {
     try {
       this.currentStream = await getMediaStream();
@@ -418,10 +442,12 @@ export class ChannelComponent implements OnInit {
     }
   }
 
+  // Stream the user's camera
   async streamCamera() {
     await this.startStreaming(() => navigator.mediaDevices.getUserMedia(gumOptions));
   }
 
+  // Stream the user's screen
   async streamScreen() {
     await this.startStreaming(() => navigator.mediaDevices.getDisplayMedia(gdmOptions));
   }

@@ -20,11 +20,7 @@ const writeData = (filePath, data) => {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 };
 
-/**
- * @description Get all channels for a specific group
- * @route GET /api/channels/:groupId
- * @access Public
- */
+// Get all channels for a specific group
 exports.getChannels = async (req, res, db) => {
   const groupId = req.params.groupId;
 
@@ -36,11 +32,7 @@ exports.getChannels = async (req, res, db) => {
   }
 };
 
-/**
- * @description Create a new channel for a specific group
- * @route POST /api/channels/:groupId
- * @access Public
- */
+// Create a new channel for a specific group
 exports.createChannel = async (req, res, db) => {
   const groupId = req.params.groupId;
   const { name, description } = req.body;
@@ -67,11 +59,7 @@ exports.createChannel = async (req, res, db) => {
   }
 };
 
-/**
- * @description Get a single channel by ID for a specific group
- * @route GET /api/channels/:groupId/:channelId
- * @access Public
- */
+// Get a single channel by ID for a specific group
 exports.getChannelById = async (req, res, db) => {
   const channelId = req.params.channelId;
   const groupId = req.params.groupId;
@@ -91,11 +79,7 @@ exports.getChannelById = async (req, res, db) => {
   }
 };
 
-/**
- * @description Update an existing channel by ID for a specific group
- * @route PUT /api/channels/:groupId/:channelId
- * @access Public
- */
+// Update an existing channel by ID for a specific group
 exports.updateChannel = async (req, res, db) => {
   const channelId = req.params.channelId;
   const groupId = req.params.groupId;
@@ -115,11 +99,7 @@ exports.updateChannel = async (req, res, db) => {
   }
 };
 
-/**
- * @description Delete a channel by ID for a specific group
- * @route DELETE /api/channels/:groupId/:channelId
- * @access Public
- */
+// Delete a channel by ID for a specific group
 exports.deleteChannel = async (req, res, db) => {
   const channelId = req.params.channelId;
   const groupId = req.params.groupId;
@@ -146,12 +126,7 @@ exports.deleteChannel = async (req, res, db) => {
   }
 };
 
-
-/**
- * @description Add a user to a channel
- * @route POST /api/channels/:groupId/:channelId/addUser
- * @access Public
- */
+// Add a user to a channel
 exports.addUserToChannel = async (req, res, db) => {
   const { groupId, channelId } = req.params;
   const { userId } = req.body;
@@ -179,11 +154,7 @@ exports.addUserToChannel = async (req, res, db) => {
   }
 };
 
-/**
- * @description Remove a user from a channel
- * @route POST /api/channels/:groupId/:channelId/removeUser
- * @access Public
- */
+// Remove a user from a channel
 exports.removeUserFromChannel = async (req, res, db) => {
   const { groupId, channelId } = req.params;
   const { userId } = req.body;
@@ -209,5 +180,3 @@ exports.removeUserFromChannel = async (req, res, db) => {
     res.status(500).json({ message: 'Failed to remove user from channel', error: err.message });
   }
 };
-
-

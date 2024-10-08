@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// File path for storing users
+// File path for storing users data
 const userFilePath = path.join(__dirname, '../users.json');
 
 // Helper function to read data from JSON file
@@ -18,6 +18,7 @@ const writeData = (data) => {
   fs.writeFileSync(userFilePath, JSON.stringify(data, null, 2), 'utf8');
 };
 
+// Get all users
 exports.getUsers = (req, res) => {
   try {
     const users = readData();
@@ -27,29 +28,32 @@ exports.getUsers = (req, res) => {
   }
 };
 
+// Create a new user
 exports.createUser = (req, res) => {
   const { username, email, password, roles, groups, interested } = req.body;
   const users = readData();
 
+  // Create a new user object with the data provided in the request
   const newUser = {
-    id: Date.now().toString(),
+    id: Date.now().toString(), // Unique ID for the user
     username,
     email,
     password,
-    roles: roles || [],
-    groups: groups || [],
-    interested: interested || []
+    roles: roles || [], // Default to an empty array if no roles are provided
+    groups: groups || [], // Default to an empty array if no groups are provided
+    interested: interested || [] // Default to an empty array if no interests are provided
   };
 
   try {
     users.push(newUser);
-    writeData(users);
+    writeData(users); // Write the updated users list back to the JSON file
     res.status(200).json(newUser);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create user', error: err.message });
   }
 };
 
+// Get a user by ID
 exports.getUserById = (req, res) => {
   const userId = req.params.id;
   try {
@@ -64,6 +68,7 @@ exports.getUserById = (req, res) => {
   }
 };
 
+// Get a user by username
 exports.getUserByUsername = (req, res) => {
   const username = req.params.username;
   try {
@@ -78,6 +83,7 @@ exports.getUserByUsername = (req, res) => {
   }
 };
 
+// Update a user by ID
 exports.updateUser = (req, res) => {
   const userId = req.params.id;
   const updateData = req.body;
@@ -88,6 +94,7 @@ exports.updateUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Update the user with the new data
     users[index] = { ...users[index], ...updateData };
     writeData(users);
     res.status(200).json({ message: 'User updated successfully' });
@@ -96,6 +103,7 @@ exports.updateUser = (req, res) => {
   }
 };
 
+// Delete a user by ID
 exports.deleteUser = (req, res) => {
   const userId = req.params.id;
   try {
@@ -105,6 +113,7 @@ exports.deleteUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Filter out the user to delete and write back the new list
     users = users.filter(user => user.id !== userId);
     writeData(users);
     res.status(200).json({ message: 'User deleted successfully' });
@@ -113,6 +122,7 @@ exports.deleteUser = (req, res) => {
   }
 };
 
+// Add a group to a user
 exports.addGroupToUser = (req, res) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
@@ -123,6 +133,7 @@ exports.addGroupToUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Add the group to the user's list of groups if it doesn't already exist
     if (!user.groups.includes(groupId)) {
       user.groups.push(groupId);
       writeData(users);
@@ -133,6 +144,7 @@ exports.addGroupToUser = (req, res) => {
   }
 };
 
+// Remove a group from a user
 exports.removeGroupFromUser = (req, res) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
@@ -143,6 +155,7 @@ exports.removeGroupFromUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Remove the group from the user's list of groups
     user.groups = user.groups.filter(group => group !== groupId);
     writeData(users);
     res.status(200).json({ message: `Group ${groupId} removed from user ${userId}` });
@@ -151,6 +164,7 @@ exports.removeGroupFromUser = (req, res) => {
   }
 };
 
+// Add an interest to a user
 exports.addInterestToUser = (req, res) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
@@ -161,6 +175,7 @@ exports.addInterestToUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Add the interest to the user's list of interests if it doesn't already exist
     if (!user.interested.includes(groupId)) {
       user.interested.push(groupId);
       writeData(users);
@@ -171,6 +186,7 @@ exports.addInterestToUser = (req, res) => {
   }
 };
 
+// Remove an interest from a user
 exports.removeInterestFromUser = (req, res) => {
   const userId = req.params.id;
   const groupId = req.params.groupId;
@@ -181,6 +197,7 @@ exports.removeInterestFromUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Remove the interest from the user's list of interests
     user.interested = user.interested.filter(interest => interest !== groupId);
     writeData(users);
     res.status(200).json({ message: `Interest ${groupId} removed from user ${userId}` });
@@ -189,6 +206,7 @@ exports.removeInterestFromUser = (req, res) => {
   }
 };
 
+// Promote a user (user -> admin -> superadmin)
 exports.promoteUser = (req, res) => {
   const userId = req.params.id;
   try {
@@ -198,6 +216,7 @@ exports.promoteUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Promote user role step-by-step
     if (user.roles.includes('user')) {
       user.roles = ['admin'];
     } else if (user.roles.includes('admin')) {
@@ -213,6 +232,7 @@ exports.promoteUser = (req, res) => {
   }
 };
 
+// Demote a user (superadmin -> admin -> user)
 exports.demoteUser = (req, res) => {
   const userId = req.params.id;
   try {
@@ -222,6 +242,7 @@ exports.demoteUser = (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Demote user role step-by-step
     if (user.roles.includes('superadmin')) {
       return res.status(400).json({ message: `User ${userId} is a superadmin and cannot be demoted` });
     } else if (user.roles.includes('admin')) {

@@ -23,14 +23,15 @@ declare var bootstrap: any;
   imports: [CommonModule, RouterModule, FormsModule],
 })
 export class GroupComponent implements OnInit {
+  // State variables
   group: Group = new Group('', '');
   role: string = '';
-  selectedNav: string = 'channels';
+  selectedNav: string = 'channels'; // Default selected tab
   newChannelName: string = '';
   newChannelDescription: string = '';
   currentGroupRole: string = '';
-  currentUser: User = new User('', '', '','');
-  availableUser: User[] = [];
+  currentUser: User = new User('', '', '', '');
+  availableUser: User[] = []; // Users that are not members or admins of the group
 
   constructor(
     private groupService: GroupService,
@@ -42,6 +43,7 @@ export class GroupComponent implements OnInit {
     private uploadService: UploadService,
   ) {}
 
+  // Initialize component and load group details
   ngOnInit() {
     this.route.params.subscribe(params => {
       const groupId = params['id'];
@@ -49,9 +51,11 @@ export class GroupComponent implements OnInit {
     });
   }
 
+  // Load users available to be added to the group
   loadAvailableUsers() {
     this.userService.getUsers().subscribe(
       (users) => {
+        // Filter out users that are already members or admins of the group
         this.availableUser = users.filter(user => 
           !this.group.members.some(member => member.id === user.id) && 
           !this.group.admins.some(admin => admin.id === user.id)
@@ -61,6 +65,7 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Load group information, channels, and set current user information
   loadGroup(groupId: string) {
     const loggedInUser = this.authService.getLoggedInUser();
     if (!loggedInUser) {
@@ -72,16 +77,23 @@ export class GroupComponent implements OnInit {
       (user) => {
         if (user) {
           this.currentUser = user;
-          if(!user.avatarPath){
+
+          // Set default avatar if none is provided
+          if (!user.avatarPath) {
             this.currentUser.avatarPath = "/assets/avatar.jpg";
-          }else{
+          } else {
             this.uploadService.getFile(user.avatarPath).subscribe(
               (blob) => {
                 const objectURL = URL.createObjectURL(blob);
                 this.currentUser.avatarPath = objectURL;
-              });
+              }
+            );
           }
+
+          // Determine the role of the current user
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
+
+          // Load group and channels
           forkJoin([
             this.groupService.getGroupById(groupId),
             this.channelService.getChannels(groupId)
@@ -90,14 +102,15 @@ export class GroupComponent implements OnInit {
               this.group = group;
               this.group.channels = channels;
               this.currentGroupRole = this.getGroupRole(user.id);
-              // Automatic admin promotions for superadmins
+
+              // Automatically promote superadmins to admin in the group
               this.group.members
-              .filter(user => user.roles.includes("superadmin"))
-              .forEach(superadminUser => {
-                this.groupService.promoteToAdmin(this.group.id,superadminUser.id);
-              });
-              this.loadAvailableUsers();
-              console.log(this.group);
+                .filter(user => user.roles.includes("superadmin"))
+                .forEach(superadminUser => {
+                  this.groupService.promoteToAdmin(this.group.id, superadminUser.id);
+                });
+
+              this.loadAvailableUsers(); // Load users that can be added to the group
             },
             (error) => console.error('Error loading group or channels:', error)
           );
@@ -109,10 +122,12 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Select the navigation tab (e.g., channels, members)
   selectNavItem(navItem: string) {
     this.selectedNav = navItem;
   }
 
+  // Open the "Create Channel" modal
   openCreateChannelModal() {
     const modalElement = document.getElementById('createChannelModal');
     if (modalElement) {
@@ -121,6 +136,7 @@ export class GroupComponent implements OnInit {
     }
   }
 
+  // Close the "Create Channel" modal
   closeCreateChannelModal() {
     const modalElement = document.getElementById('createChannelModal');
     if (modalElement) {
@@ -131,16 +147,17 @@ export class GroupComponent implements OnInit {
     }
   }
 
+  // Create a new channel in the group
   createChannel() {
     if (!this.newChannelName.trim() || !this.newChannelDescription.trim()) {
-      return;
+      return; // Do not proceed if the name or description is empty
     }
 
     this.channelService.createChannel(this.newChannelName, this.group.id, this.newChannelDescription).subscribe(
       (newChannel) => {
         this.groupService.addChannelToGroup(this.group.id, newChannel.id).subscribe(
           () => {
-            this.loadGroup(this.group.id);
+            this.loadGroup(this.group.id); // Reload the group to see the new channel
             this.newChannelName = '';
             this.newChannelDescription = '';
             this.closeCreateChannelModal();
@@ -152,6 +169,7 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Update group information such as name or description
   updateGroup() {
     if (!this.currentUser) return;
 
@@ -159,14 +177,14 @@ export class GroupComponent implements OnInit {
       name: this.group.name,
       description: this.group.description
     }).subscribe(
-      (updatedGroup) => {
-
+      () => {
         alert('Group details updated');
       },
       (error) => console.error('Failed to update group:', error)
     );
   }
 
+  // Get the user's role in the group
   getGroupRole(userId: string): string {
     if (this.group.admins.some(admin => admin.id === userId)) {
       return 'Admin';
@@ -177,10 +195,12 @@ export class GroupComponent implements OnInit {
     }
   }
 
+  // Navigate to a specific channel in the group
   selectChannel(channel: Channel) {
     this.router.navigate(['/channel/' + this.group.id + '/' + channel.id]);
   }
 
+  // Confirm before deleting the group
   confirmDeleteGroup() {
     const confirmDelete = confirm('Are you sure you want to delete this group? This action cannot be undone.');
     if (confirmDelete) {
@@ -188,6 +208,7 @@ export class GroupComponent implements OnInit {
     }
   }
 
+  // Delete the group
   deleteGroup() {
     this.groupService.deleteGroup(this.group.id).subscribe(
       () => {
@@ -198,22 +219,22 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Check if the user can be promoted to admin
   canPromote(user: User): boolean {
     return user.roles.includes('user') || user.roles.includes('admin');
   }
-  
+
+  // Check if the current user is an admin
   isCurrentUserAdmin(): boolean {
     return this.group.admins.some(admin => admin.id === this.currentUser?.id) || this.currentUser.roles[0] === "superadmin";
   }
 
+  // Check if the current user is part of the channel
   isCurrentUserInChannel(channel: Channel): boolean {
     return Array.isArray(channel.users) && channel.users.some(userId => userId === this.currentUser.id);
   }
-  
-  
-  
-  
 
+  // Promote a user to admin
   promoteUser(user: User): void {
     this.groupService.promoteToAdmin(this.group.id, user.id).subscribe(
       () => {
@@ -223,6 +244,7 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Demote an admin to a regular member
   demoteUser(user: User): void {
     this.groupService.demoteAdmin(this.group.id, user.id).subscribe(
       () => {
@@ -232,10 +254,11 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Ban a user from the group
   banUser(user: User) {
-    if(user.roles.includes('superadmin')){
+    if (user.roles.includes('superadmin')) {
       alert("You cannot ban a superadmin");
-    }else if (confirm(`Ban ${user.username}?`)) {
+    } else if (confirm(`Ban ${user.username}?`)) {
       this.groupService.banUserFromGroup(this.group.id, user.id).subscribe(
         () => {
           this.loadGroup(this.group.id);
@@ -243,9 +266,9 @@ export class GroupComponent implements OnInit {
         (error) => console.error('Error banning user:', error)
       );
     }
-    
   }
 
+  // Approve a user to join the group
   approveUser(user: User) {
     this.groupService.approveInterestedUser(this.group.id, user.id).subscribe(
       () => {
@@ -255,6 +278,7 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Deny a user's request to join the group
   denyUser(user: User) {
     this.groupService.denyInterestedUser(this.group.id, user.id).subscribe(
       () => {
@@ -264,6 +288,7 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Remove a user from the group
   removeUserFromGroup(user: User) {
     this.groupService.removeUserFromGroup(this.group.id, user.id).subscribe(
       () => {
@@ -273,6 +298,7 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Leave the group
   leaveGroup() {
     const confirmLeave = confirm('Are you sure you want to leave this group?');
     if (!confirmLeave) return;
@@ -284,7 +310,7 @@ export class GroupComponent implements OnInit {
             this.userService.addGroupToUser(superUser.id, this.group.id).subscribe(() => {
               this.userService.removeInterestedGroupFromUser(superUser.id, this.group.id).subscribe(() => {
                 this.denyUser(superUser);
-                this.groupService.promoteToAdmin(this.group.id,superUser.id);
+                this.groupService.promoteToAdmin(this.group.id, superUser.id);
               });
             });
           });
@@ -300,7 +326,8 @@ export class GroupComponent implements OnInit {
     }
   }
 
-  addUser(user: User){
+  // Add a user to the group
+  addUser(user: User) {
     this.groupService.addUserToGroup(this.group.id, user.id).subscribe(
       () => {
         this.loadGroup(this.group.id);
@@ -309,6 +336,7 @@ export class GroupComponent implements OnInit {
     );
   }
 
+  // Go back to the dashboard
   goBack() {
     this.router.navigate(['/dashboard']);
   }
