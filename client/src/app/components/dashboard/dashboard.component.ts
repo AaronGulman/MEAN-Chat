@@ -35,6 +35,7 @@ export class DashboardComponent implements OnInit {
   allUsers: User[] = [];
   socket_disconnect: any;
   newAvatarFile: any;
+  banned: { user: User, bannedGroups: string[]} [] = [];
 
   constructor(
     private groupService: GroupService,
@@ -128,7 +129,7 @@ export class DashboardComponent implements OnInit {
           const isUserInterested = userInterestedGroups.some(interestedGroup => interestedGroup.id === group.id); 
           
           const isUserBanned = group.banned && group.banned.some(bannedUser => bannedUser.id === this.user.id);
-          
+          this.updateBannedUsers(group);
           return !isUserMember && (!isUserInterested || this.registrationStatus[group.id] === 'Pending') && !isUserBanned;
         });
   
@@ -195,23 +196,49 @@ export class DashboardComponent implements OnInit {
   }
 
 
+  private updateBannedUsers(group: Group) {
+    if (group.banned && group.banned.length > 0) {
+      group.banned.forEach((bannedUser) => {
+        const existingBannedEntry = this.banned.find(entry => entry.user.id === bannedUser.id);
   
+        if (existingBannedEntry) {
+          existingBannedEntry.bannedGroups.push(group.name);
+        } else {
+          this.banned.push({ user: bannedUser, bannedGroups: [group.name] });
+        }
+      });
+    }
+  }
 
   registerGroup(group: Group) {
-    this.groupService.registerUserToGroup(group.id, this.user.id).subscribe(
-      (groupUpdate) => {
-        this.registrationStatus[group.id] = 'Pending';
-        this.interestedGroups.push(group);
-        this.userService.addInterestedGroupToUser(this.user.id, group.id).subscribe(
-          () => {
-            this.closeRegisterGroupModal();
-          },
-          (error) => console.error('Error adding interest to user:', error)
-        );
-      },
-      (error) => console.error('Error registering user to group:', error)
-    );
+    if (this.role === 'superadmin') {
+      this.groupService.promoteToAdmin(group.id, this.user.id).subscribe(
+        () => {
+          this.groups.push(group);
+          console.log('Superadmin joined group directly:', group.name);
+          this.loadAvailableGroups();
+          this.groupService.promoteToAdmin(group.id, this.user.id);
+        },
+        (error) => console.error('Error adding superadmin to group:', error)
+      );
+    } else {
+      this.groupService.registerUserToGroup(group.id, this.user.id).subscribe(
+        (groupUpdate) => {
+          this.registrationStatus[group.id] = 'Pending';
+          this.interestedGroups.push(group);
+          this.userService.addInterestedGroupToUser(this.user.id, group.id).subscribe(
+            () => {
+              this.loadAvailableGroups();
+              this.closeRegisterGroupModal();
+            },
+            (error) => console.error('Error adding interest to user:', error)
+          );
+        },
+        (error) => console.error('Error registering user to group:', error)
+      );
+    }
   }
+  
 
   updateUser() {
     const updatedData: any = {

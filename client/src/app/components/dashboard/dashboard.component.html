@@ -73,7 +73,7 @@
                                 </div>
 
                                 <!-- Card for Creating New Group (for admin/superadmin) -->
-                                <div class="col" *ngIf="role === 'admin' || role === 'superadmin'">
+                                <div class="col" *ngIf="role === 'superadmin'">
                                     <div class="card mb-3" (click)="openCreateGroupModal()">
                                         <div class="card-body text-center">
                                             <p class="card-text"><strong>‎ ‎ ‎ </strong></p>
@@ -173,6 +173,21 @@
                                         </ng-container>
                                     </div>
                                 </li>
+                                <!-- Banned Section -->
+                                <h5>Ban Record</h5>
+                                <div *ngIf="banned && banned.length > 0; else noBanned">
+                                    <ul class="list-group mb-4">
+                                        <li *ngFor="let bannedEntry of banned" class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1"><strong>{{ bannedEntry.user.username }}</strong></h6>
+                                                <p class="mb-0 text-muted">Banned from: {{ bannedEntry.bannedGroups.join(', ') }}</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <ng-template #noBanned>
+                                    <p>None</p>
+                                </ng-template>
                             </ul>
                         </div>
                     </div>
