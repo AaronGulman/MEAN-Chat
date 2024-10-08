@@ -145,3 +145,69 @@ exports.deleteChannel = async (req, res, db) => {
     res.status(500).json({ message: 'Failed to delete channel', error: err.message });
   }
 };
+
+
+/**
+ * @description Add a user to a channel
+ * @route POST /api/channels/:groupId/:channelId/addUser
+ * @access Public
+ */
+exports.addUserToChannel = async (req, res, db) => {
+  const { groupId, channelId } = req.params;
+  const { userId } = req.body;
+
+  try {
+    const channel = await db.collection('Channels').findOne({ id: channelId, groupId });
+    if (!channel) {
+      return res.status(404).json({ message: 'Channel not found' });
+    }
+
+    channel.users = channel.users || [];
+
+    if (channel.users.includes(userId)) {
+      return res.status(400).json({ message: 'User already in the channel' });
+    }
+
+    await db.collection('Channels').updateOne(
+      { id: channelId, groupId },
+      { $push: { users: userId } }
+    );
+
+    res.status(200).json({ message: 'User added to channel successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to add user to channel', error: err.message });
+  }
+};
+
+/**
+ * @description Remove a user from a channel
+ * @route POST /api/channels/:groupId/:channelId/removeUser
+ * @access Public
+ */
+exports.removeUserFromChannel = async (req, res, db) => {
+  const { groupId, channelId } = req.params;
+  const { userId } = req.body;
+
+  try {
+    const channel = await db.collection('Channels').findOne({ id: channelId, groupId });
+    if (!channel) {
+      return res.status(404).json({ message: 'Channel not found' });
+    }
+
+    channel.users = channel.users || [];
+
+    if (!channel.users.includes(userId)) {
+      return res.status(400).json({ message: 'User not found in the channel' });
+    }
+    await db.collection('Channels').updateOne(
+      { id: channelId, groupId },
+      { $pull: { users: userId } }
+    );
+
+    res.status(200).json({ message: 'User removed from channel successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to remove user from channel', error: err.message });
+  }
+};
+
+

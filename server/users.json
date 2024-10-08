@@ -1,82 +1,5 @@
 [
   {
-    "id": "user1",
-    "username": "User One",
-    "email": "user1@example.com",
-    "password": "pass1",
-    "groups": [
-      "group1"
-    ],
-    "interested": [],
-    "roles": [
-      "superadmin"
-    ]
-  },
-  {
-    "id": "user2",
-    "username": "User Two",
-    "email": "user2@example.com",
-    "password": "pass2",
-    "groups": [
-      "group1"
-    ],
-    "interested": [],
-    "roles": [
-      "user"
-    ]
-  },
-  {
-    "id": "user3",
-    "username": "User Three",
-    "email": "user3@example.com",
-    "password": "pass3",
-    "groups": [],
-    "interested": [
-      "group1"
-    ],
-    "roles": []
-  },
-  {
-    "id": "1728195303177",
-    "username": "draco",
-    "email": "1092469607@qq.com",
-    "password": "123",
-    "roles": [
-      "user"
-    ],
-    "groups": [
-      "1728195291386"
-    ],
-    "interested": [
-      "group1"
-    ],
-    "avatarPath": ""
-  },
-  {
-    "id": "1728227968308",
-    "username": "newUser",
-    "email": "newUser@example.com",
-    "password": "password123",
-    "roles": [
-      "user"
-    ],
-    "groups": [],
-    "interested": [],
-    "avatarPath": ""
-  },
-  {
-    "id": "1728228031307",
-    "username": "newUserMon Oct 07 2024",
-    "email": "newUser@example.com",
-    "password": "password123",
-    "roles": [
-      "user"
-    ],
-    "groups": [],
-    "interested": [],
-    "avatarPath": ""
-  },
-  {
     "id": "1728228965961",
     "username": "super",
     "email": "newuser@example.com",
@@ -85,10 +8,63 @@
       "superadmin"
     ],
     "groups": [
-      "1728228994289"
+      "1728228994289",
+      "1728382315532"
     ],
     "interested": [
       "group1"
+    ]
+  },
+  {
+    "id": "1728381686575",
+    "username": "111",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "superadmin"
+    ],
+    "groups": [
+      "1728382315532"
+    ],
+    "interested": [
+      "group1"
+    ],
+    "avatarPath": ""
+  },
+  {
+    "id": "1728382428608",
+    "username": "draco1",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "admin"
+    ],
+    "groups": [
+      "1728228994289"
+    ],
+    "interested": [
+      "1728382315532",
+      "group1"
+    ],
+    "avatarPath": ""
+  },
+  {
+    "id": "1728383159919",
+    "username": "dwacochan",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "user"
+    ],
+    "groups": [
+      "1728228994289"
+    ],
+    "interested": [
+      "1728382315532",
+      "group1"
+    ],
+    "avatarPath": [
+      "3aed6f86e2f385cabd33099c0f873797.gif"
     ]
   }
 ]

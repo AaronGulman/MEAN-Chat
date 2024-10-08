@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
-import { ChannelService } from '../../services/chat.service';
+import { ChannelService } from '../../services/channel.service';
 import { SocketService } from '../../services/socket.service';
 import { UploadService } from '../../services/upload.service';
 import { PeerService } from '../../services/peer.service';

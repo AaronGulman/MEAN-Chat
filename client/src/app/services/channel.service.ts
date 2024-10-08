@@ -17,7 +17,7 @@ export class ChannelService {
   }
 
   // Create a new channel for a specific group
-  createChannel(name: string, groupId: string, description: string = ""): Observable<Channel> {
+  createChannel(name: string, groupId: string, description: string = ''): Observable<Channel> {
     const newChannel = { name, groupId, description };
     return this.http.post<Channel>(`${this.apiUrl}/${groupId}`, newChannel);
   }
@@ -35,5 +35,15 @@ export class ChannelService {
   // Find a channel by ID for a specific group
   getChannelById(groupId: string, channelId: string): Observable<any> {
     return this.http.get<Channel>(`${this.apiUrl}/${groupId}/${channelId}`);
+  }
+
+  // Add a user to a specific channel
+  addUserToChannel(groupId: string, channelId: string, userId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${groupId}/${channelId}/addUser`, { userId });
+  }
+
+  // Remove a user from a specific channel
+  removeUserFromChannel(groupId: string, channelId: string, userId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${groupId}/${channelId}/removeUser`, { userId });
   }
 }

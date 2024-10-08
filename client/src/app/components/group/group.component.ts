@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
-import { ChannelService } from '../../services/chat.service'; 
+import { ChannelService } from '../../services/channel.service'; 
 import { UploadService } from '../../services/upload.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Group } from '../../models/group.model';
@@ -30,6 +30,8 @@ export class GroupComponent implements OnInit {
   newChannelDescription: string = '';
   currentGroupRole: string = '';
   currentUser: User = new User('', '', '','');
+  availableUser: User[] = [];
+
 
   constructor(
     private groupService: GroupService,
@@ -46,6 +48,18 @@ export class GroupComponent implements OnInit {
       const groupId = params['id'];
       this.loadGroup(groupId);
     });
+  }
+
+  loadAvailableUsers() {
+    this.userService.getUsers().subscribe(
+      (users) => {
+        this.availableUser = users.filter(user => 
+          !this.group.members.some(member => member.id === user.id) && 
+          !this.group.admins.some(admin => admin.id === user.id)
+        );
+      },
+      (error) => console.error('Error loading all users:', error)
+    );
   }
 
   loadGroup(groupId: string) {
@@ -69,16 +83,21 @@ export class GroupComponent implements OnInit {
               });
           }
           this.role = user.roles.includes('superadmin') ? 'superadmin' : user.roles.includes('admin') ? 'admin' : 'user';
-  
-          // Use forkJoin to fetch both the group and the channels simultaneously
           forkJoin([
             this.groupService.getGroupById(groupId),
             this.channelService.getChannels(groupId)
           ]).subscribe(
             ([group, channels]) => {
               this.group = group;
-              this.group.channels = channels;  // Assuming channels are added to the group object
+              this.group.channels = channels;
               this.currentGroupRole = this.getGroupRole(user.id);
+              // Automatic admin promotions for superadmins
+              this.group.members
+              .filter(user => user.roles.includes("superadmin"))
+              .forEach(superadminUser => {
+                this.groupService.promoteToAdmin(this.group.id,superadminUser.id);
+              });
+              this.loadAvailableUsers();
               console.log(this.group);
             },
             (error) => console.error('Error loading group or channels:', error)
@@ -185,8 +204,16 @@ export class GroupComponent implements OnInit {
   }
   
   isCurrentUserAdmin(): boolean {
-    return this.group.admins.some(admin => admin.id === this.currentUser?.id);
+    return this.group.admins.some(admin => admin.id === this.currentUser?.id) || this.currentUser.roles[0] === "superadmin";
   }
+
+  isCurrentUserInChannel(channel: Channel): boolean {
+    return Array.isArray(channel.users) && channel.users.some(userId => userId === this.currentUser.id);
+  }
+  
+  
+  
+  
 
   promoteUser(user: User): void {
     this.groupService.promoteToAdmin(this.group.id, user.id).subscribe(
@@ -258,6 +285,7 @@ export class GroupComponent implements OnInit {
             this.userService.addGroupToUser(superUser.id, this.group.id).subscribe(() => {
               this.userService.removeInterestedGroupFromUser(superUser.id, this.group.id).subscribe(() => {
                 this.denyUser(superUser);
+                this.groupService.promoteToAdmin(this.group.id,superUser.id);
               });
             });
           });
@@ -271,6 +299,15 @@ export class GroupComponent implements OnInit {
         this.goBack();
       });
     }
+  }
+
+  addUser(user: User){
+    this.groupService.addUserToGroup(this.group.id, user.id).subscribe(
+      () => {
+        this.loadGroup(this.group.id);
+      },
+      (error) => console.error('Error adding user:', error)
+    );
   }
 
   goBack() {
