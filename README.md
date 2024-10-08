@@ -1,3 +1,37 @@
+# Table of Contents
+
+- [MEAN Chat Documentation](#mean-chat-documentation)
+  - [Git Repository Organization and Version Control Approach](#git-repository-organization-and-version-control-approach)
+    - [Version Control Approach](#version-control-approach)
+  - [Installation and Setup Instructions](#installation-and-setup-instructions)
+    - [1. Clone the Repository](#1-clone-the-repository)
+    - [2.  Setting Up the Client (Angular Application)](#2--setting-up-the-client-angular-application)
+    - [3. Setting Up the Server (Node.js Application)](#3-setting-up-the-server-nodejs-application)
+    - [4. Running End-to-End (E2E) Tests with Cypress](#4-running-endtoend-e2e-tests-with-cypress)
+    - [5. Install MongoDB](#5-install-mongodb)
+    - [Windows](#windows)
+    - [5. Configuring MongoDB for MEAN-Chat Application](#5-configuring-mongodb-for-meanchat-application)
+      - [1. Create the Database](#1-create-the-database)
+      - [2. Create Collections](#2-create-collections)
+      - [3. Verify Collections](#3-verify-collections)
+    - [Additional Information](#additional-information)
+  - [Main Data Structures](#main-data-structures)
+    - [Client-Side Data Structures](#clientside-data-structures)
+  - [Server-Side Data Structures](#serverside-data-structures)
+    - [Server-Side Models](#serverside-models)
+  - [Angular Architecture](#angular-architecture)
+    - [Components](#components)
+    - [Services](#services)
+    - [Models](#models)
+    - [Routes](#routes)
+  - [Node Server Architecture](#node-server-architecture)
+    - [Server Folder Structure](#server-folder-structure)
+    - [Route Definitions](#route-definitions)
+      - [`user.route.js`](#userroutejs)
+      - [`group.route.js`](#grouproutejs)
+      - [`channel.routes.js`](#channelroutesjs)
+      - [`auth.route.js`](#authroutejs)
+
 # MEAN Chat Documentation
 
 ## Git Repository Organization and Version Control Approach
