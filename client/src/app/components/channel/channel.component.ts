@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, Renderer2, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GroupService } from '../../services/group.service';
@@ -43,7 +44,36 @@ const gumOptions = {
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './channel.component.html',
-  styleUrls: ['./channel.component.css']
+  styleUrls: ['./channel.component.css'],
+  animations: [
+    trigger('slideIn', [
+      transition(':enter', [
+        style({ transform: 'translateX(100%)', opacity: 0 }), // Initial state: slide in from left
+        animate('0.3s ease-out', style({ transform: 'translateX(0)', opacity: 1 })) // End state
+      ]),
+      transition(':leave', [
+        animate('0.3s ease-in', style({ transform: 'translateX(100%)', opacity: 0 }))
+      ])
+    ]),
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('0.5s ease-out', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('0.5s ease-in', style({ opacity: 0 }))
+      ])
+    ]),
+    trigger('zoomIn', [
+      transition(':enter', [
+        style({ transform: 'scale(0.5)', opacity: 0 }),
+        animate('0.4s ease-out', style({ transform: 'scale(1)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('0.4s ease-in', style({ transform: 'scale(0.5)', opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class ChannelComponent implements OnInit {
   channel: Channel = new Channel('', '', '', '');
@@ -194,6 +224,9 @@ export class ChannelComponent implements OnInit {
         });
       }
     });
+    setTimeout(() => {
+      this.scrollToBottom();
+    }, 0);
     this.messageSignal.update(messages => [...messages, message]);
   }
 
@@ -206,7 +239,11 @@ export class ChannelComponent implements OnInit {
   // Scroll to the bottom of the chat history
   scrollToBottom(): void {
     if (this.chatHistory) {
-      this.renderer.setProperty(this.chatHistory.nativeElement, 'scrollTop', this.chatHistory.nativeElement.scrollHeight);
+      const element = this.chatHistory.nativeElement;
+      element.scrollTo({
+        top: element.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }
 

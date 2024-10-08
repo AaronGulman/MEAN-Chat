@@ -49,7 +49,7 @@
                 <div *ngIf="selectedNav === 'channel'" class="chat-container">
                     <!-- Chat History -->
                     <div class="chat-history" #chatHistory>
-                        <div *ngFor="let message of messageSignal()" class="d-flex mb-3" [ngClass]="{'justify-content-end': message.userId === currentUser.username, 'justify-content-start': message.userId !== currentUser.username}">
+                        <div *ngFor="let message of messageSignal()" @slideIn class="d-flex mb-3" [ngClass]="{'justify-content-end': message.userId === currentUser.username, 'justify-content-start': message.userId !== currentUser.username}">
                             <!-- User Avatar -->
                             <div *ngIf="message.userId !== currentUser.username" class="me-2">
                                 <img [src]="message.avatarPath || '/assets/avatar.jpg'" alt="User Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
@@ -110,7 +110,7 @@
                             <h5>Group Admins</h5>
                             <ul class="list-group mb-4">
                                 <!-- Display all group admins -->
-                                <li *ngFor="let admin of group.admins" class="list-group-item d-flex justify-content-between align-items-center">
+                                <li *ngFor="let admin of group.admins" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1"><strong>{{ admin.username }}</strong></h6>
                                         <span class="badge bg-primary">Admin</span>
@@ -126,7 +126,7 @@
                             <h5 *ngIf="channelMembers.length > 0">Channel Members</h5>
                             <ul class="list-group mb-4" *ngIf="channelMembers.length > 0">
                                 <!-- Display all channel members -->
-                                <li *ngFor="let member of channelMembers" class="list-group-item d-flex justify-content-between align-items-center">
+                                <li *ngFor="let member of channelMembers" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1"><strong>{{ member.username }}</strong></h6>
                                     </div>
@@ -146,7 +146,7 @@
                         <h5>Group Members (Not in Channel)</h5>
                         <ul class="list-group mb-4">
                             <!-- Display group members not already in the channel -->
-                            <li *ngFor="let member of availableMembers" class="list-group-item d-flex justify-content-between align-items-center">
+                            <li *ngFor="let member of availableMembers" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-1"><strong>{{ member.username }}</strong></h6>
                                 </div>
@@ -228,7 +228,7 @@
                     
                     <!-- Videos Grid -->
                     <div class="video-grid row g-4">
-                        <div *ngFor="let video of videos" class="col-md-4 video-container">
+                        <div *ngFor="let video of videos" @zoomIn class="col-md-4 video-container">
                         <div class="video-card p-3 border rounded shadow-sm position-relative">
                             <span *ngIf="video.userId !== ownID; else currentUserVideoLabel" class="video-label position-absolute top-0 start-0 bg-primary text-white px-2 py-1 rounded-end">Peer: {{ video.userId }}</span>
                             <ng-template #currentUserVideoLabel>

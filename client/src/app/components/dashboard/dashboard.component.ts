@@ -1,5 +1,6 @@
 declare var bootstrap: any; // Declares a global variable for Bootstrap, used to control modals
 import { Component, OnInit } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { GroupService } from '../../services/group.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
@@ -18,7 +19,42 @@ import { forkJoin } from 'rxjs';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.css'],
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('0.3s ease-in', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('0.3s ease-out', style({ opacity: 0 }))
+      ])
+    ]),
+    trigger('cardAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.8)' }), // Initial state when card enters
+        animate('0.5s ease-out', style({ opacity: 1, transform: 'scale(1)' })) // End state
+      ]),
+    ]),
+    trigger('buttonHover', [
+      transition(':enter', [
+        style({ transform: 'scale(1)', backgroundColor: 'red' }),
+        animate('0.3s ease-in', style({ transform: 'scale(1.05)', backgroundColor: 'darkred' }))
+      ]),
+      transition(':leave', [
+        animate('0.3s ease-out', style({ transform: 'scale(1)', backgroundColor: 'red' }))
+      ])
+    ]),
+    trigger('slideIn', [
+      transition(':enter', [
+        style({ transform: 'translateX(100%)', opacity: 0 }), // Initial state: slide in from left
+        animate('0.3s ease-out', style({ transform: 'translateX(0)', opacity: 1 })) // End state
+      ]),
+      transition(':leave', [
+        animate('0.3s ease-in', style({ transform: 'translateX(100%)', opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class DashboardComponent implements OnInit {
   // Component state variables

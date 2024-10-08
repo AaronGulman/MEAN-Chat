@@ -12,5 +12,32 @@
       "1728394903259"
     ],
     "interested": []
+  },
+  {
+    "id": "1728397441987",
+    "username": "draco",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "user"
+    ],
+    "groups": [
+      "1728394903259",
+      "1728394743196"
+    ],
+    "interested": [],
+    "avatarPath": ""
+  },
+  {
+    "id": "1728398231892",
+    "username": "draco1",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [
+      "user"
+    ],
+    "groups": [],
+    "interested": [],
+    "avatarPath": ""
   }
 ]

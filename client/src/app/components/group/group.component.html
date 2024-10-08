@@ -44,18 +44,18 @@
                                  style="width: 120px; height: 120px; object-fit: cover; margin-bottom: 15px;">
                         </div>                        
                         <li class="nav-item">
-                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'channels'}" (click)="selectNavItem('channels')">Channels</a>
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'channels'}" (click)="selectNavItem('channels')" @fadeInOut>Channels</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'users'}" (click)="selectNavItem('users')">Users</a>
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'users'}" (click)="selectNavItem('users')" @fadeInOut>Users</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')">Settings</a>
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')" @fadeInOut>Settings</a>
                         </li>
                     </ul>
                 </div>
                 <div class="logout-btn-container d-flex justify-content-center">
-                    <button class="btn btn-danger" (click)="goBack()">Back</button>
+                    <button class="btn btn-danger" @buttonHover (click)="goBack()">Back</button>
                 </div>
             </nav>
 
@@ -70,7 +70,7 @@
                     <h4>Channels</h4>
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <!-- Channel Cards -->
-                        <ng-container *ngFor="let channel of group.channels">
+                        <ng-container *ngFor="let channel of group.channels"  @cardAnimation>
                             <div class="col" [ngClass]="{'d-none': !(isCurrentUserInChannel(channel) || isCurrentUserAdmin())}">
                               <div class="card mb-3" (click)="selectChannel(channel)">
                                 <div class="card-body">
@@ -82,7 +82,7 @@
                           </ng-container>
 
                         <!-- Create New Channel Card (for admin/superadmin) -->
-                        <div *ngIf="isCurrentUserAdmin() || role === 'superadmin'">
+                        <div *ngIf="isCurrentUserAdmin() || role === 'superadmin'"  @cardAnimation>
                             <div class="card mb-3" (click)="openCreateChannelModal()">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Create New Channel</h5>
@@ -136,7 +136,7 @@
                             <h5>Admins</h5>
                             <div *ngIf="group.admins && group.admins.length > 0; else noAdmins">
                                 <ul class="list-group mb-4">
-                                    <li *ngFor="let user of group.admins" class="list-group-item d-flex justify-content-between align-items-center">
+                                    <li *ngFor="let user of group.admins"  @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
                                             <p class="mb-1">Roles: 
@@ -159,7 +159,7 @@
                             <h5>Members</h5>
                             <div *ngIf="group.members && group.members.length > 0; else noMembers">
                                 <ul class="list-group mb-4">
-                                    <li *ngFor="let user of group.members" class="list-group-item d-flex justify-content-between align-items-center">
+                                    <li *ngFor="let user of group.members" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
                                             <p class="mb-1">Roles: 
@@ -192,7 +192,7 @@
                             <h5>Interested</h5>
                             <div *ngIf="group.interested && group.interested.length > 0; else noInterested">
                                 <ul class="list-group mb-4">
-                                    <li *ngFor="let user of group.interested" class="list-group-item d-flex justify-content-between align-items-center">
+                                    <li *ngFor="let user of group.interested"  @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
                                             <p class="mb-1">Roles: 
@@ -223,7 +223,7 @@
                                 <h5>Available Users</h5>
                                 <div *ngIf="availableUser && availableUser.length > 0; else noAvailable">
                                     <ul class="list-group mb-4">
-                                        <li *ngFor="let user of availableUser" class="list-group-item d-flex justify-content-between align-items-center">
+                                        <li *ngFor="let user of availableUser" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                             <div>
                                                 <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
                                                 <p class="mb-1">Roles: 
@@ -246,10 +246,10 @@
                             </div >
 
                             <!-- Banned Section -->
-                            <h5>Banned</h5>
+                            <h5>Baned User History</h5>
                             <div *ngIf="group.banned && group.banned.length > 0; else noBanned">
                                 <ul class="list-group mb-4">
-                                    <li *ngFor="let user of group.banned" class="list-group-item d-flex justify-content-between align-items-center">
+                                    <li *ngFor="let user of group.banned" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
                                         </div>
@@ -266,7 +266,7 @@
                 </div>
 
                 <!-- Create New Channel Modal -->
-                <div class="modal fade" id="createChannelModal" tabindex="-1" aria-labelledby="createChannelModalLabel" aria-hidden="true">
+                <div class="modal fade" id="createChannelModal" @fadeInOut tabindex="-1" aria-labelledby="createChannelModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">

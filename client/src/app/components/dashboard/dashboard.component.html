@@ -21,18 +21,24 @@
                                  style="width: 120px; height: 120px; object-fit: cover; margin-bottom: 15px;">
                         </div>                                  
                         <li class="nav-item">
-                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'groups'}" (click)="selectNavItem('groups')">Groups</a>
-                        </li>
-                        <li class="nav-item" *ngIf="role === 'superadmin'">
-                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'users'}" (click)="selectNavItem('users')">Users</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')">Settings</a>
-                        </li>
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'groups'}" (click)="selectNavItem('groups')" @fadeInOut>
+                              Groups
+                            </a>
+                          </li>
+                          <li class="nav-item" *ngIf="role === 'superadmin'">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'users'}" (click)="selectNavItem('users')" @fadeInOut>
+                              Users
+                            </a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')" @fadeInOut>
+                              Settings
+                            </a>
+                          </li>                          
                     </ul>
                 </div>
                 <div class="logout-btn-container d-flex justify-content-center mt-3">
-                    <button class="btn btn-danger" (click)="logout()">Logout</button>
+                    <button class="btn btn-danger" @buttonHover (click)="logout()">Logout</button>
                 </div>
             </nav>
 
@@ -49,20 +55,20 @@
                             <h4>Groups</h4>
                             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                                 <!-- Group Cards -->
-                                <div class="col" *ngFor="let group of groups">
+                                <div class="col" *ngFor="let group of groups" @cardAnimation>
                                     <div class="card mb-3" (click)="selectGroup(group)">
-                                        <div class="card-body">
-                                            <h5 class="card-title">{{ group.name }}</h5>
-                                            <p class="card-text">{{ group.description }}</p>
-                                            <p class="card-text"><strong>Members:</strong> {{ (group.members.length ) + (group.admins.length) }}</p>
-                                            <p class="card-text"><strong>Channels:</strong> {{ group.channels.length }}</p>
-                                        </div>
+                                      <div class="card-body">
+                                        <h5 class="card-title">{{ group.name }}</h5>
+                                        <p class="card-text">{{ group.description }}</p>
+                                        <p class="card-text"><strong>Members:</strong> {{ (group.members.length) + (group.admins.length) }}</p>
+                                        <p class="card-text"><strong>Channels:</strong> {{ group.channels.length }}</p>
+                                      </div>
                                     </div>
-                                </div>
+                                  </div>
 
                                 <!-- Card for Registering New Groups (for chat users) -->
                                 <div class="col">
-                                    <div class="card mb-3" (click)="openRegisterGroupModal()">
+                                    <div class="card mb-3" @cardAnimation (click)="openRegisterGroupModal() ">
                                         <div class="card-body text-center">
                                             <p class="card-text"><strong>‎ ‎ ‎ </strong></p>
                                             <h5 class="card-title">Register for New Groups</h5>
@@ -74,7 +80,7 @@
 
                                 <!-- Card for Creating New Group (for admin/superadmin) -->
                                 <div class="col" *ngIf="role === 'superadmin'">
-                                    <div class="card mb-3" (click)="openCreateGroupModal()">
+                                    <div class="card mb-3" @cardAnimation (click)="openCreateGroupModal()">
                                         <div class="card-body text-center">
                                             <p class="card-text"><strong>‎ ‎ ‎ </strong></p>
                                             <h5 class="card-title">Create New Group</h5>
@@ -87,10 +93,10 @@
                         </div>
 
                         <!-- Interested Groups List -->
-                        <div class="col-12 mt-4" *ngIf="interestedGroups.length > 0">
+                        <div class="col-12 mt-4" *ngIf="interestedGroups.length > 0" @fadeInOut>
                             <h4>Interested Groups</h4>
                             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                                <div class="col" *ngFor="let group of interestedGroups">
+                                <div class="col" *ngFor="let group of interestedGroups" @cardAnimation>
                                     <div class="card card-container mb-3">
                                         <div class="card-body">
                                             <h5 class="card-title">{{ group.name }}</h5>
@@ -142,7 +148,7 @@
                     <div class="row">
                         <div class="col-12">
                             <ul class="list-group">
-                                <li *ngFor="let user of allUsers" class="list-group-item d-flex justify-content-between align-items-center">
+                                <li *ngFor="let user of allUsers" class="list-group-item d-flex justify-content-between align-items-center" @slideIn>
                                     <div>
                                         <h6 class="mb-1"><strong>{{ user.username }}</strong></h6>
                                         <p class="mb-1">Roles: <span *ngFor="let role of user.roles; let isLast = last">
@@ -175,8 +181,9 @@
                                 </li>
                             </ul>
                         </div>
+                        
                         <!-- Banned Section -->
-                        <h5>Ban Record</h5>
+                        <h5 class="mt-5">Ban Record</h5>
                         <div *ngIf="banned && banned.length > 0; else noBanned">
                             <ul class="list-group mb-4">
                                 <li *ngFor="let bannedEntry of banned" class="list-group-item d-flex justify-content-between align-items-center">
@@ -194,11 +201,12 @@
                 </div>
 
 
+
                 
 
                 
                 <!-- Register New Group Modal -->
-                <div class="modal fade" id="registerGroupModal" tabindex="-1" aria-labelledby="registerGroupModalLabel" aria-hidden="true">
+                <div @fadeInOut class="modal fade" @fadeInOut id="registerGroupModal" tabindex="-1" aria-labelledby="registerGroupModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -229,7 +237,7 @@
                 </div>
 
                 <!-- Create New Group Modal -->
-                <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+                <div @fadeInOut class="modal fade" @fadeInOut id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
