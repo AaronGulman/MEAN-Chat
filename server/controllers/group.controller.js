@@ -19,12 +19,13 @@ const writeData = (filePath, data) => {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 };
 
+// Get all groups and populate banned users
 exports.getAllGroups = (req, res) => {
   try {
     const groups = readData(groupFilePath);
-
-    // Populate banned users
     const users = readData(userFilePath);
+
+    // Populate banned users with full user details
     const populatedGroups = groups.map(group => {
       if (group.banned && group.banned.length > 0) {
         group.banned = group.banned.map(userId => users.find(user => user.id === userId)).filter(Boolean);
@@ -38,12 +39,13 @@ exports.getAllGroups = (req, res) => {
   }
 };
 
+// Create a new group
 exports.createGroup = (req, res) => {
   const { name, description, admin } = req.body;
   const groups = readData(groupFilePath);
 
   const newGroup = {
-    id: Date.now().toString(),
+    id: Date.now().toString(), // Unique group ID
     name,
     description,
     admins: [admin.id],
@@ -62,6 +64,7 @@ exports.createGroup = (req, res) => {
   }
 };
 
+// Get a group by ID and populate user details
 exports.getGroupById = (req, res) => {
   const groupId = req.params.id;
   try {
@@ -71,7 +74,7 @@ exports.getGroupById = (req, res) => {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Populate users in the group
+    // Populate users in the group with full user details
     const users = readData(userFilePath);
     group.interested = group.interested.map(userId => users.find(user => user.id === userId)).filter(Boolean);
     group.members = group.members.map(userId => users.find(user => user.id === userId)).filter(Boolean);
@@ -84,6 +87,7 @@ exports.getGroupById = (req, res) => {
   }
 };
 
+// Update group information
 exports.updateGroup = (req, res) => {
   const groupId = req.params.id;
   const updateData = req.body;
@@ -103,6 +107,7 @@ exports.updateGroup = (req, res) => {
   }
 };
 
+// Delete a group and update user data accordingly
 exports.deleteGroup = (req, res) => {
   const groupId = req.params.id;
 
@@ -113,7 +118,7 @@ exports.deleteGroup = (req, res) => {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    // Update related users
+    // Update related users to remove references to the deleted group
     let users = readData(userFilePath);
     users = users.map(user => {
       user.groups = user.groups.filter(id => id !== groupId);
@@ -132,6 +137,7 @@ exports.deleteGroup = (req, res) => {
   }
 };
 
+// Add a channel to a group
 exports.addChannelToGroup = (req, res) => {
   const groupId = req.params.id;
   const { channelId } = req.body;
@@ -151,6 +157,7 @@ exports.addChannelToGroup = (req, res) => {
   }
 };
 
+// Remove a channel from a group
 exports.removeChannelFromGroup = (req, res) => {
   const groupId = req.params.id;
   const channelId = req.params.channelId;
@@ -170,6 +177,7 @@ exports.removeChannelFromGroup = (req, res) => {
   }
 };
 
+// Add a user to a group and update their groups list
 exports.addUserToGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -197,6 +205,7 @@ exports.addUserToGroup = (req, res) => {
   }
 };
 
+// Remove a user from a group
 exports.removeUserFromGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -208,10 +217,12 @@ exports.removeUserFromGroup = (req, res) => {
       return res.status(404).json({ message: 'Group not found' });
     }
 
+    // Remove user from members and admins lists of the group
     groups[groupIndex].members = groups[groupIndex].members.filter(id => id !== userId);
     groups[groupIndex].admins = groups[groupIndex].admins.filter(id => id !== userId);
     writeData(groupFilePath, groups);
 
+    // Update user data to remove group reference
     const users = readData(userFilePath);
     const userIndex = users.findIndex(user => user.id === userId);
     if (userIndex !== -1) {
@@ -225,6 +236,7 @@ exports.removeUserFromGroup = (req, res) => {
   }
 };
 
+// Promote a user to an admin in the group
 exports.promoteToAdmin = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -246,6 +258,7 @@ exports.promoteToAdmin = (req, res) => {
   }
 };
 
+// Demote an admin to a member in the group
 exports.demoteAdmin = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -267,6 +280,7 @@ exports.demoteAdmin = (req, res) => {
   }
 };
 
+// Register a user as interested in joining a group
 exports.registerUserToGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -286,6 +300,7 @@ exports.registerUserToGroup = (req, res) => {
   }
 };
 
+// Approve a user interested in joining the group
 exports.approveInterestedUser = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -297,10 +312,12 @@ exports.approveInterestedUser = (req, res) => {
       return res.status(404).json({ message: 'Group not found' });
     }
 
+    // Move user from interested to members list
     groups[groupIndex].interested = groups[groupIndex].interested.filter(id => id !== userId);
     groups[groupIndex].members = [...new Set([...groups[groupIndex].members, userId])];
     writeData(groupFilePath, groups);
 
+    // Update user to add group reference
     const users = readData(userFilePath);
     const userIndex = users.findIndex(user => user.id === userId);
     if (userIndex !== -1) {
@@ -315,6 +332,7 @@ exports.approveInterestedUser = (req, res) => {
   }
 };
 
+// Deny a user interested in joining the group
 exports.denyInterestedUser = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -329,6 +347,7 @@ exports.denyInterestedUser = (req, res) => {
     groups[groupIndex].interested = groups[groupIndex].interested.filter(id => id !== userId);
     writeData(groupFilePath, groups);
 
+    // Update user to remove interest reference
     const users = readData(userFilePath);
     const userIndex = users.findIndex(user => user.id === userId);
     if (userIndex !== -1) {
@@ -342,6 +361,7 @@ exports.denyInterestedUser = (req, res) => {
   }
 };
 
+// Ban a user from a group
 exports.banUserFromGroup = (req, res) => {
   const groupId = req.params.id;
   const userId = req.params.userId;
@@ -353,10 +373,12 @@ exports.banUserFromGroup = (req, res) => {
       return res.status(404).json({ message: 'Group not found' });
     }
 
+    // Add user to banned list and remove from members
     groups[groupIndex].banned = [...new Set([...groups[groupIndex].banned, userId])];
     groups[groupIndex].members = groups[groupIndex].members.filter(id => id !== userId);
     writeData(groupFilePath, groups);
 
+    // Update user to remove group reference
     const users = readData(userFilePath);
     const userIndex = users.findIndex(user => user.id === userId);
     if (userIndex !== -1) {

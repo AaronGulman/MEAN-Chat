@@ -86,6 +86,6 @@ describe('LoginComponent', () => {
 
     component.onLogin();
 
-    expect(window.alert).toHaveBeenCalledWith('Error occured during login');
+    expect(window.alert).toHaveBeenCalledWith('Error occurred during login');
   });
 });

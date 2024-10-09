@@ -17,5 +17,13 @@ module.exports = (db) => {
 
     // Route to find a channel by ID
     router.get('/channels/:groupId/:channelId', (req, res) => channelController.getChannelById(req, res, db));
+
+
+    // Route to add a user to a channel
+    router.post('/channels/:groupId/:channelId/addUser', (req, res) => channelController.addUserToChannel(req, res, db));
+
+    // Route to remove a user from a channel
+    router.post('/channels/:groupId/:channelId/removeUser', (req, res) => channelController.removeUserFromChannel(req, res, db));
+    
     return router;
 };

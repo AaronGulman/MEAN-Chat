@@ -24,6 +24,9 @@
                             <a class="nav-link" [ngClass]="{'active': selectedNav === 'channel'}" (click)="selectNavItem('channel')">Chat</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" [ngClass]="{'active': selectedNav === 'users'}" (click)="selectNavItem('users')">Users</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" [ngClass]="{'active': selectedNav === 'settings'}" (click)="selectNavItem('settings')">Settings</a>
                         </li>
                         <li class="nav-item">
@@ -46,7 +49,7 @@
                 <div *ngIf="selectedNav === 'channel'" class="chat-container">
                     <!-- Chat History -->
                     <div class="chat-history" #chatHistory>
-                        <div *ngFor="let message of messages" class="d-flex mb-3" [ngClass]="{'justify-content-end': message.userId === currentUser.username, 'justify-content-start': message.userId !== currentUser.username}">
+                        <div *ngFor="let message of messageSignal()" @slideIn class="d-flex mb-3" [ngClass]="{'justify-content-end': message.userId === currentUser.username, 'justify-content-start': message.userId !== currentUser.username}">
                             <!-- User Avatar -->
                             <div *ngIf="message.userId !== currentUser.username" class="me-2">
                                 <img [src]="message.avatarPath || '/assets/avatar.jpg'" alt="User Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
@@ -97,6 +100,69 @@
                     </div>
                 </div>
 
+                <!-- Users Tab -->
+                <div *ngIf="selectedNav === 'users'">
+                    <h4>Channel Users</h4>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Group Admins Section -->
+                            <h5>Group Admins</h5>
+                            <ul class="list-group mb-4">
+                                <!-- Display all group admins -->
+                                <li *ngFor="let admin of group.admins" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><strong>{{ admin.username }}</strong></h6>
+                                        <span class="badge bg-primary">Admin</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Channel Members Section -->
+                            <h5 *ngIf="channelMembers.length > 0">Channel Members</h5>
+                            <ul class="list-group mb-4" *ngIf="channelMembers.length > 0">
+                                <!-- Display all channel members -->
+                                <li *ngFor="let member of channelMembers" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><strong>{{ member.username }}</strong></h6>
+                                    </div>
+                                    <!-- Remove from Channel Button (Visible for Admins only) -->
+                                    <div *ngIf="isCurrentUserAdmin()">
+                                        <button class="btn btn-danger btn-sm" (click)="removeUserFromChannel(member)">
+                                            Remove from Channel
+                                        </button>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin Only Section for Adding Users to Channel -->
+                    <div *ngIf="isCurrentUserAdmin() && availableMembers.length > 0">
+                        <h5>Group Members (Not in Channel)</h5>
+                        <ul class="list-group mb-4">
+                            <!-- Display group members not already in the channel -->
+                            <li *ngFor="let member of availableMembers" @slideIn class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1"><strong>{{ member.username }}</strong></h6>
+                                </div>
+                                <!-- Add to Channel Button -->
+                                <div>
+                                    <button class="btn btn-success btn-sm" (click)="addUserToChannel(member)">
+                                        Add to Channel
+                                    </button>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>                    
+                </div>
+
+
+
                 <!-- Settings Tab -->
                 <div *ngIf="selectedNav === 'settings'">
                     <h4>Channel Settings</h4>
@@ -123,18 +189,19 @@
                             </textarea>
                         </div>
                         <div class="d-flex justify-content-between mt-3">
-                            <button
-                                *ngIf="isCurrentUserAdmin()"
-                                type="button"
-                                class="btn btn-danger"
-                                (click)="confirmDeleteChannel()">
+                            <!-- Delete Channel Button (Visible to Admins only) -->
+                            <button *ngIf="isCurrentUserAdmin()" type="button" class="btn btn-danger" (click)="confirmDeleteChannel()">
                                 Delete Channel
                             </button>
-                            <button
-                                *ngIf="isCurrentUserAdmin()"
-                                type="submit"
-                                class="btn btn-primary">
+                            
+                            <!-- Save Changes Button (Visible to Admins only) -->
+                            <button *ngIf="isCurrentUserAdmin()" type="submit" class="btn btn-primary">
                                 Save Changes
+                            </button>
+                
+                            <!-- Leave Channel Button (Visible if user is NOT admin) -->
+                            <button *ngIf="!isCurrentUserAdmin()" type="button" class="btn btn-warning" (click)="leaveChannel()">
+                                Leave Channel
                             </button>
                         </div>
                     </form>
@@ -161,7 +228,7 @@
                     
                     <!-- Videos Grid -->
                     <div class="video-grid row g-4">
-                        <div *ngFor="let video of videos" class="col-md-4 video-container">
+                        <div *ngFor="let video of videos" @zoomIn class="col-md-4 video-container">
                         <div class="video-card p-3 border rounded shadow-sm position-relative">
                             <span *ngIf="video.userId !== ownID; else currentUserVideoLabel" class="video-label position-absolute top-0 start-0 bg-primary text-white px-2 py-1 rounded-end">Peer: {{ video.userId }}</span>
                             <ng-template #currentUserVideoLabel>

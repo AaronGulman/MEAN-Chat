@@ -1,4 +1,3 @@
-// group.model.ts
 import { Channel } from './channel.model';
 import { User } from './user.model';
 

@@ -11,12 +11,18 @@ const SERVER_URL = 'https://localhost:3000';
   providedIn: 'root'
 })
 export class SocketService {
+  // Socket connection instance
   public socket: any;
+
+  // ID of the connected socket
   public socketId: any;
 
   constructor(private uploadService: UploadService) {}
 
-  // Initialize socket connection
+  /**
+   * @description Initialize socket connection to the server
+   * @returns Function to disconnect the socket connection
+   */
   initSocket() {
     this.socket = io(SERVER_URL);
     return () => {
@@ -24,13 +30,19 @@ export class SocketService {
     };
   }
 
-  // Join a specific channel
-  joinChannel(channelId: string, user : User) {
+  /**
+   * @description Join a specific channel and notify other users
+   * @param channelId - The ID of the channel to join
+   * @param user - The user object containing user details
+   */
+  joinChannel(channelId: string, user: User) {
     if (!this.socket) {
       this.initSocket();
     }
+    // Emit an event to join a channel
     this.socket.emit('joinChannel', { channelId });
-    // Send a "joined the room" message after joining the channel
+
+    // Send a "joined the room" message to the channel
     const joinMessage: Message = {
       channelId: channelId,
       userId: user.username,
@@ -39,12 +51,17 @@ export class SocketService {
       uploadUrl: [],
       avatarPath: user.avatarPath
     };
-    this.sendMessage(joinMessage,user);
+    this.sendMessage(joinMessage, user);
   }
 
-  // Leave a specific channel
-  leaveChannel(channelId: string, user : User) {
+  /**
+   * @description Leave a specific channel and notify other users
+   * @param channelId - The ID of the channel to leave
+   * @param user - The user object containing user details
+   */
+  leaveChannel(channelId: string, user: User) {
     if (this.socket) {
+      // Send a "left the room" message to the channel
       const leaveMessage: Message = {
         channelId: channelId,
         userId: user.username,
@@ -53,19 +70,26 @@ export class SocketService {
         uploadUrl: [],
         avatarPath: user.avatarPath
       };
-      this.sendMessage(leaveMessage,user);
+      this.sendMessage(leaveMessage, user);
+      // Emit an event to leave the channel
       this.socket.emit('leaveChannel', { channelId });
     }
   }
 
-  // Send a message to a channel
+  /**
+   * @description Send a message to a channel
+   * @param message - The message object containing message details
+   * @param user - The user object containing user details
+   */
   sendMessage(message: Message, user: User) {
     if (!this.socket) {
       this.initSocket();
-      this.joinChannel(message.channelId,user);
+      // Rejoin the channel if the socket is re-initialized
+      this.joinChannel(message.channelId, user);
     }
     const { channelId, userId, message: messageData, uploadUrl } = message;
     const timeStamp = Date.now();
+    // Emit the message to the server
     this.socket.emit('sendMessage', {
       channelId,
       userId,
@@ -75,24 +99,34 @@ export class SocketService {
     });
   }
 
-  // Listen for messages from the server
+  /**
+   * @description Listen for messages from the server and return as an observable
+   * @returns Observable of type Message containing the message details
+   */
   getMessage(): Observable<Message> {
     return new Observable((observer) => {
       if (!this.socket) {
         this.initSocket();
       }
+      // Listen for the 'receiveMessage' event
       this.socket.on('receiveMessage', (data: Message) => {
         observer.next(data);
       });
     });
   }
 
-
+  /**
+   * @description Emit a peer ID to the server
+   * @param peerID - The ID of the peer to emit
+   */
   peerID(peerID: string) {
     this.socket.emit('peerID', peerID);
   }
-  
 
+  /**
+   * @description Listen for peer ID events from the server and return as an observable
+   * @returns Observable of type string containing the peer ID
+   */
   getPeerID(): Observable<string> {
     return new Observable((observer) => {
       this.socket.on('peerID', (peerID: string) => {
