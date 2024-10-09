@@ -1,34 +1,17 @@
 [
   {
-    "id": "1728394743196",
+    "id": "1728455630343",
     "name": "test",
     "description": "123",
     "admins": [
-      "1728394340370"
+      "1728455367582",
+      "1728455245219"
     ],
     "members": [
-      "1728397441987"
+      "1728455647473"
     ],
     "channels": [
-      "1728397830055"
-    ],
-    "interested": [],
-    "banned": [
-      "1728397441987"
-    ]
-  },
-  {
-    "id": "1728394903259",
-    "name": "Super Group",
-    "description": "Group created by superadmin for testing.Group created by superadmin for testing.",
-    "admins": [
-      "1728394340370"
-    ],
-    "members": [
-      "1728397441987"
-    ],
-    "channels": [
-      "1728397506275"
+      "1728455765094"
     ],
     "interested": [],
     "banned": []

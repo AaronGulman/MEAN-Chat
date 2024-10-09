@@ -79,7 +79,7 @@
                                 </div>
 
                                 <!-- Card for Creating New Group (for admin/superadmin) -->
-                                <div class="col" *ngIf="role === 'superadmin'">
+                                <div class="col" *ngIf="role === 'superadmin' || role === 'admin'" >
                                     <div class="card mb-3" @cardAnimation (click)="openCreateGroupModal()">
                                         <div class="card-body text-center">
                                             <p class="card-text"><strong>‎ ‎ ‎ </strong></p>

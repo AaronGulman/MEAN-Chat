@@ -7,6 +7,7 @@ import { ChannelService } from '../../services/channel.service';
 import { UploadService } from '../../services/upload.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('GroupComponent', () => {
   let component: GroupComponent;
@@ -18,6 +19,7 @@ describe('GroupComponent', () => {
         GroupComponent,
         HttpClientModule,
         RouterTestingModule,
+        BrowserAnimationsModule
       ],
       providers: [
         AuthService,

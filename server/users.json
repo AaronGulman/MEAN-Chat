@@ -1,38 +1,53 @@
 [
   {
-    "id": "1728394340370",
+    "id": "1728455245219",
     "username": "super",
-    "email": "super@admin.com",
+    "email": "newuser@example.com",
     "password": "123",
     "roles": [
       "superadmin"
     ],
     "groups": [
-      "1728394743196",
-      "1728394903259"
+      "1728455630343"
     ],
-    "interested": []
+    "interested": [],
+    "avatarPath": [
+      "b1bc752128e73abe5aeb26e281787b89.gif"
+    ]
   },
   {
-    "id": "1728397441987",
+    "id": "1728455367582",
     "username": "draco",
+    "email": "1092469607@qq.com",
+    "password": "123",
+    "roles": [],
+    "groups": [
+      "1728455630343"
+    ],
+    "interested": [],
+    "avatarPath": [
+      "c1a3a967b91a1788d29cea279e4a5458.webp"
+    ]
+  },
+  {
+    "id": "1728455647473",
+    "username": "111",
     "email": "1092469607@qq.com",
     "password": "123",
     "roles": [
       "user"
     ],
     "groups": [
-      "1728394903259",
-      "1728394743196"
+      "1728455630343"
     ],
     "interested": [],
     "avatarPath": ""
   },
   {
-    "id": "1728398231892",
-    "username": "draco1",
-    "email": "1092469607@qq.com",
-    "password": "123",
+    "id": "1728456598019",
+    "username": "newUserWed Oct 09 2024",
+    "email": "newUser@example.com",
+    "password": "password123",
     "roles": [
       "user"
     ],

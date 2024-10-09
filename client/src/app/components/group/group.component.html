@@ -177,7 +177,7 @@
                                             <button class="btn btn-danger btn-sm me-2" (click)="banUser(user)">
                                                 Ban
                                             </button>
-                                            <button *ngIf="role === 'superadmin'" class="btn btn-warning btn-sm" (click)="removeUserFromGroup(user)">
+                                            <button *ngIf="isCurrentUserAdmin() || role === 'superadmin'" class="btn btn-warning btn-sm" (click)="removeUserFromGroup(user)">
                                                 Remove
                                             </button>
                                         </div>
