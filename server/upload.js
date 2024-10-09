@@ -32,11 +32,21 @@ router.post('/upload', (req, res) => {
 
     for (let file of uploadedFiles) {
       const oldpath = file.filepath;
-      const randomName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalFilename);
-      const newpath = form.uploadDir + '/' + randomName;
+      const fileExt = path.extname(file.originalFilename).toLowerCase();
+      const validExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
+
+      if (!validExtensions.includes(fileExt)) {
+        return res.status(400).json({
+          status: 'Fail',
+          message: 'Invalid file type. Only images are allowed.'
+        });
+      }
+
+      const randomName = crypto.randomBytes(16).toString('hex') + fileExt;
+      const newpath = path.join(uploadFolder, randomName);
 
       try {
-        fs.renameSync(oldpath, newpath);
+        await fs.promises.rename(oldpath, newpath);
         fileDetails.push({ filename: randomName, size: file.size });
       } catch (err) {
         console.log('Error moving the file');
